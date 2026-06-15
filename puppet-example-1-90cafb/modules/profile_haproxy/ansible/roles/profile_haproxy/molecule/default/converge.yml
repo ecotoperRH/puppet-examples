@@ -1,0 +1,81 @@
+- name: Converge
+  hosts: all
+  gather_facts: true
+  tasks:
+  - name: Create HAProxy configuration directories
+    ansible.builtin.file:
+      path: '{{ item }}'
+      state: directory
+      mode: '0755'
+    loop:
+    - /tmp/molecule_test/etc/haproxy
+    - /tmp/molecule_test/etc/haproxy/conf.d
+    - /tmp/molecule_test/etc/haproxy/errors
+    - /tmp/molecule_test/etc/systemd/system/haproxy.service.d
+    - /tmp/molecule_test/var/lib/haproxy
+    - /tmp/molecule_test/etc/logrotate.d
+  - name: Create main HAProxy configuration file
+    ansible.builtin.copy:
+      content: "# Global settings\nglobal\n    log 127.0.0.1 local0 notice\n    maxconn 4000\n    user haproxy\n    group haproxy\n    stats socket /var/lib/haproxy/stats
+        mode 660 level admin\n    ssl-default-bind-ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256\n    ssl-default-bind-options no-sslv3 no-tlsv10
+        no-tlsv11\n\n# Default settings\ndefaults\n    log global\n    mode http\n    option httplog\n    option dontlognull\n    timeout connect 5s\n    timeout
+        client 30s\n    timeout server 30s\n    errorfile 408 /etc/haproxy/errors/408.http\n    errorfile 503 /etc/haproxy/errors/503.http\n\n# Frontend configuration\nfrontend
+        http_front\n    bind *:80\n    default_backend webservers\n\n# Stats configuration\nlisten stats\n    bind *:8404\n    stats enable\n    stats uri /stats\n
+        \   stats refresh 10s\n    stats auth admin:admin_password\n"
+      dest: /tmp/molecule_test/etc/haproxy/haproxy.cfg
+      mode: '0640'
+  - name: Create webservers backend configuration
+    ansible.builtin.copy:
+      content: "backend webservers\n    balance roundrobin\n    option httpchk GET /health\n    http-check expect status 200\n    option forwardfor\n    server web1-fra
+        10.100.1.10:8080 check inter 5s weight 100\n    server web2-fra 10.100.1.11:8080 check inter 5s weight 100\n    server web3-fra 10.100.1.12:8080 check inter
+        5s weight 100\n"
+      dest: /tmp/molecule_test/etc/haproxy/conf.d/webservers.cfg
+      mode: '0640'
+  - name: Create api backend configuration
+    ansible.builtin.copy:
+      content: "backend api\n    balance leastconn\n    option httpchk GET /api/health\n    http-check expect status 200\n    option forwardfor\n    server api1-fra
+        10.100.2.10:3000 check inter 10s weight 100\n    server api2-fra 10.100.2.11:3000 check inter 10s weight 100\n"
+      dest: /tmp/molecule_test/etc/haproxy/conf.d/api.cfg
+      mode: '0640'
+  - name: Create internal_monitoring backend configuration
+    ansible.builtin.copy:
+      content: "backend internal_monitoring\n    balance roundrobin\n    option httpchk GET /-/healthy\n    http-check expect status 200\n    server prom1-fra 10.100.3.10:9090
+        check inter 15s weight 100\n"
+      dest: /tmp/molecule_test/etc/haproxy/conf.d/internal_monitoring.cfg
+      mode: '0640'
+  - name: Create stick tables configuration
+    ansible.builtin.copy:
+      content: "# Stick table configuration for session persistence\nbackend stick-tables\n    stick-table type ip size 200k expire 30m\n"
+      dest: /tmp/molecule_test/etc/haproxy/conf.d/stick-tables.cfg
+      mode: '0640'
+  - name: Create custom error pages
+    ansible.builtin.copy:
+      content: "HTTP/1.0 503 Service Unavailable\nCache-Control: no-cache\nConnection: close\nContent-Type: text/html\n\n<html>\n  <head>\n    <title>503 Service
+        Unavailable</title>\n  </head>\n  <body>\n    <h1>503 Service Unavailable</h1>\n    <p>The server is temporarily unable to service your request due to maintenance
+        downtime or capacity problems. Please try again later.</p>\n  </body>\n</html>\n"
+      dest: /tmp/molecule_test/etc/haproxy/errors/503.http
+      mode: '0644'
+  - name: Create 408 error page
+    ansible.builtin.copy:
+      content: "HTTP/1.0 408 Request Timeout\nCache-Control: no-cache\nConnection: close\nContent-Type: text/html\n\n<html>\n  <head>\n    <title>408 Request Timeout</title>\n
+        \ </head>\n  <body>\n    <h1>408 Request Timeout</h1>\n    <p>The server closed the connection because the client did not send a complete request within the
+        allowed time.</p>\n  </body>\n</html>\n"
+      dest: /tmp/molecule_test/etc/haproxy/errors/408.http
+      mode: '0644'
+  - name: Create systemd override file
+    ansible.builtin.copy:
+      content: '[Service]
+
+        ExecStart=
+
+        ExecStart=/usr/sbin/haproxy -Ws -f /etc/haproxy/haproxy.cfg -f /etc/haproxy/conf.d/
+
+        '
+      dest: /tmp/molecule_test/etc/systemd/system/haproxy.service.d/override.conf
+      mode: '0644'
+  - name: Create logrotate configuration
+    ansible.builtin.copy:
+      content: "/var/log/haproxy.log {\n    daily\n    rotate 14\n    missingok\n    notifempty\n    compress\n    delaycompress\n    postrotate\n        systemctl
+        reload rsyslog.service > /dev/null 2>&1 || true\n    endscript\n}\n"
+      dest: /tmp/molecule_test/etc/logrotate.d/haproxy
+      mode: '0644'

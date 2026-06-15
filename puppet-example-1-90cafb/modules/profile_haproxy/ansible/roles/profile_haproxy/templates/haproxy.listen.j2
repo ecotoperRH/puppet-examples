@@ -1,0 +1,13 @@
+# HAProxy listen section for stats
+# Managed by Ansible — do not edit manually
+
+{% if stats_enabled %}
+listen stats
+    bind *:{{ stats_port }}
+    stats enable
+    stats uri {{ stats_uri }}
+    stats realm HAProxy\ Statistics
+    stats auth {{ stats_user }}:{{ stats_password }}
+    stats admin if TRUE
+    stats refresh 30s
+{% endif %}

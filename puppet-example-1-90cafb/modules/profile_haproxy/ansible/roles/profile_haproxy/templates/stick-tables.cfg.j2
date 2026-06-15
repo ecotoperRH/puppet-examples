@@ -1,0 +1,10 @@
+# Stick tables configuration for session persistence
+# Managed by Ansible — do not edit manually
+
+backend stick-tables
+    stick-table type ip size {{ stick_table_size }} expire {{ stick_table_expire }}
+    
+frontend ft_web
+    stick-table type ip size {{ stick_table_size }} expire {{ stick_table_expire }}
+    http-request track-sc0 src
+    use_backend stick-tables

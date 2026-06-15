@@ -1,0 +1,17 @@
+# HAProxy global section
+# Managed by Ansible — do not edit manually
+
+global
+    log         {{ log_server }} {{ log_facility }} {{ log_level }}
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     {{ global_maxconn }}
+    user        {{ user }}
+    group       {{ group }}
+    daemon
+    stats socket /var/lib/haproxy/stats mode 660 level admin
+{% if ssl_enabled %}
+    ssl-default-bind-ciphers {{ ssl_ciphers }}
+    ssl-default-bind-options no-sslv3 no-tlsv10 no-tlsv11
+    tune.ssl.default-dh-param 2048
+{% endif %}

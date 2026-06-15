@@ -1,0 +1,4 @@
+[Service]
+# Override ExecStart to load both main config and conf.d directory
+ExecStart=
+ExecStart=/usr/sbin/haproxy -Ws -f {{ config_file }} -f {{ config_dir }}/conf.d/

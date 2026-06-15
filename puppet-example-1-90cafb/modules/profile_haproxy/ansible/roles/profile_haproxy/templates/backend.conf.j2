@@ -1,0 +1,14 @@
+# Backend: {{ backend_name }}
+# Managed by Ansible — do not edit manually
+
+backend {{ backend_name }}
+    balance {{ balance }}
+{% if health_check is defined and health_check %}
+    option  {{ health_check }}
+{% endif %}
+{% if health_interval is defined and health_interval %}
+    default-server inter {{ health_interval }}
+{% endif %}
+{% for server in servers %}
+    server {{ server.name }} {{ server.address }}:{{ port }} check weight {{ server.weight }}{% if ssl_enabled %} ssl verify none{% endif %}
+{% endfor %}

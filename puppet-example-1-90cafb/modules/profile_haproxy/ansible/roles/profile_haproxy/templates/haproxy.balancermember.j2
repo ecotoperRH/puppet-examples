@@ -1,0 +1,6 @@
+# HAProxy balancermember configuration
+# Managed by Ansible — do not edit manually
+
+{% for server in servers %}
+    server {{ server.name }} {{ server.address }}:{{ port }} check weight {{ server.weight }}{% if ssl_enabled %} ssl verify none{% endif %}
+{% endfor %}

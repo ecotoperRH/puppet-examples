@@ -1,0 +1,26 @@
+---
+haproxy_backends:
+  webservers:
+    balance: roundrobin
+    port: 80
+    health_check: httpchk GET /health
+    health_interval: 5s
+    servers:
+      - name: web1
+        address: 192.168.1.101
+        weight: 10
+      - name: web2
+        address: 192.168.1.102
+        weight: 10
+  appservers:
+    balance: leastconn
+    port: 8080
+    health_check: httpchk GET /status
+    health_interval: 10s
+    servers:
+      - name: app1
+        address: 192.168.1.201
+        weight: 5
+      - name: app2
+        address: 192.168.1.202
+        weight: 5

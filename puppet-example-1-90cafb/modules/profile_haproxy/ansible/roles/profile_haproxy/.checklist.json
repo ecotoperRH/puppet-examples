@@ -1,0 +1,493 @@
+{
+  "module_name": "profile_haproxy",
+  "items": [
+    {
+      "category": "credentials",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_haproxy/aap-configuration/controller_credential_types.yml",
+      "status": "complete",
+      "description": "AAP credential types configuration",
+      "notes": ""
+    },
+    {
+      "category": "credentials",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_haproxy/aap-configuration/controller_credentials.yml",
+      "status": "complete",
+      "description": "AAP credentials configuration",
+      "notes": ""
+    },
+    {
+      "category": "credentials",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_haproxy/tasks/validate_credentials.yml",
+      "status": "complete",
+      "description": "Credential validation tasks",
+      "notes": ""
+    },
+    {
+      "category": "structure",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_haproxy/meta/main.yml",
+      "status": "complete",
+      "description": "Role metadata",
+      "notes": "Created standard meta/main.yml"
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_haproxy/manifests/init.pp",
+      "target_path": "ansible/roles/profile_haproxy/tasks/main.yml",
+      "status": "complete",
+      "description": "Main tasks file",
+      "notes": "Created from Puppet init.pp manifest"
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_haproxy/data/common.yaml",
+      "target_path": "ansible/roles/profile_haproxy/defaults/main.yml",
+      "status": "complete",
+      "description": "Default variables",
+      "notes": "Created defaults/main.yml with all common HAProxy settings from the source file. Organized settings into logical sections and added comments for clarity."
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_haproxy/data/os/Debian.yaml",
+      "target_path": "ansible/roles/profile_haproxy/vars/Debian.yml",
+      "status": "complete",
+      "description": "OS-specific variables",
+      "notes": "Created OS-specific vars file for Debian systems. Removed the profile_haproxy:: prefix from all variables."
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_haproxy/data/environment/production.yaml",
+      "target_path": "ansible/roles/profile_haproxy/vars/production.yml",
+      "status": "complete",
+      "description": "Environment-specific variables (production)",
+      "notes": "Created environment-specific vars file for production. Removed the profile_haproxy:: prefix from all variables."
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_haproxy/data/environment/staging.yaml",
+      "target_path": "ansible/roles/profile_haproxy/vars/staging.yml",
+      "status": "complete",
+      "description": "Environment-specific variables (staging)",
+      "notes": "Created environment-specific vars file for staging. Removed the profile_haproxy:: prefix from all variables."
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_haproxy/data/datacenter/dc1_fra.yaml",
+      "target_path": "ansible/roles/profile_haproxy/vars/dc1_fra.yml",
+      "status": "complete",
+      "description": "Datacenter-specific variables",
+      "notes": "Created datacenter-specific vars file for Frankfurt DC. Removed the profile_haproxy:: prefix from all variables."
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_haproxy/data/cluster/haproxy_prod_fra.yaml",
+      "target_path": "ansible/roles/profile_haproxy/vars/haproxy_prod_fra.yml",
+      "status": "complete",
+      "description": "Cluster-specific variables",
+      "notes": "Created cluster-specific vars file for Frankfurt production HAProxy cluster. Removed the profile_haproxy:: prefix from all variables."
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_haproxy/data/nodes/lb01.fra.example.com.yaml",
+      "target_path": "ansible/roles/profile_haproxy/vars/lb01.fra.example.com.yml",
+      "status": "complete",
+      "description": "Node-specific variables",
+      "notes": "Created node-specific vars file for lb01.fra.example.com with overrides for stats and API backend weights."
+    },
+    {
+      "category": "structure",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_haproxy/handlers/main.yml",
+      "status": "complete",
+      "description": "Handlers for service restarts",
+      "notes": "Handlers were already created."
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_haproxy/manifests/install.pp",
+      "target_path": "ansible/roles/profile_haproxy/tasks/install.yml",
+      "status": "complete",
+      "description": "Installation tasks",
+      "notes": "Created from Puppet install manifest"
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_haproxy/manifests/config.pp",
+      "target_path": "ansible/roles/profile_haproxy/tasks/config.yml",
+      "status": "complete",
+      "description": "Configuration tasks",
+      "notes": "Created from Puppet config manifest"
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_haproxy/manifests/service.pp",
+      "target_path": "ansible/roles/profile_haproxy/tasks/service.yml",
+      "status": "complete",
+      "description": "Service management tasks",
+      "notes": "Created from Puppet service manifest"
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_haproxy/manifests/firewall.pp",
+      "target_path": "ansible/roles/profile_haproxy/tasks/firewall.yml",
+      "status": "complete",
+      "description": "Firewall configuration tasks",
+      "notes": "Created from Puppet firewall manifest"
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_haproxy/templates/haproxy.cfg.erb",
+      "target_path": "ansible/roles/profile_haproxy/templates/haproxy.cfg.j2",
+      "status": "complete",
+      "description": "Main HAProxy configuration template",
+      "notes": "Main configuration file that includes other template fragments"
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_haproxy/templates/backend.conf.epp",
+      "target_path": "ansible/roles/profile_haproxy/templates/backend.conf.j2",
+      "status": "complete",
+      "description": "Backend configuration template",
+      "notes": "Converted EPP template to Jinja2 format, preserving all conditional logic and variable references."
+    },
+    {
+      "category": "templates",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_haproxy/templates/haproxy-override.conf.j2",
+      "status": "complete",
+      "description": "Systemd override template",
+      "notes": "Created systemd override template for HAProxy service to load both main config and conf.d directory."
+    },
+    {
+      "category": "templates",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_haproxy/templates/haproxy-logrotate.j2",
+      "status": "complete",
+      "description": "Logrotate configuration template",
+      "notes": "Created logrotate configuration template for HAProxy logs with daily rotation and 14-day retention."
+    },
+    {
+      "category": "templates",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_haproxy/templates/stick-tables.cfg.j2",
+      "status": "complete",
+      "description": "Stick tables configuration template",
+      "notes": "Created stick-tables configuration template for HAProxy session persistence."
+    },
+    {
+      "category": "files",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_haproxy/files/errors/503.http",
+      "status": "complete",
+      "description": "Error page for 503 status",
+      "notes": "Error pages were already created."
+    },
+    {
+      "category": "files",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_haproxy/files/errors/408.http",
+      "status": "complete",
+      "description": "Error page for 408 status",
+      "notes": "Error pages were already created."
+    },
+    {
+      "category": "files",
+      "source_path": "modules/profile_haproxy/lib/facter/haproxy_version.rb",
+      "target_path": "ansible/roles/profile_haproxy/files/facts.d/haproxy_version.fact",
+      "status": "complete",
+      "description": "Custom fact for HAProxy version",
+      "notes": "Created custom fact script to determine HAProxy version, equivalent to the Ruby facter in the original module."
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_haproxy/molecule/default/molecule.yml",
+      "status": "complete",
+      "description": "Molecule scenario configuration",
+      "notes": "Created by MoleculeAgent (deterministic scaffold)"
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_haproxy/molecule/default/converge.yml",
+      "status": "complete",
+      "description": "Molecule converge playbook",
+      "notes": "Molecule testing files were already created."
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_haproxy/molecule/default/verify.yml",
+      "status": "complete",
+      "description": "Molecule verify playbook",
+      "notes": "Molecule testing files were already created."
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_haproxy/molecule/default/create.yml",
+      "status": "complete",
+      "description": "Molecule create playbook",
+      "notes": "Created by MoleculeAgent (deterministic scaffold)"
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_haproxy/molecule/default/destroy.yml",
+      "status": "complete",
+      "description": "Molecule destroy playbook",
+      "notes": "Created by MoleculeAgent (deterministic scaffold)"
+    },
+    {
+      "category": "structure",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_haproxy/.github/workflows/ansible-ci.yml",
+      "status": "complete",
+      "description": "GitHub Actions CI workflow",
+      "notes": "GitHub Actions workflow was already created."
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_haproxy/manifests/config.pp",
+      "target_path": "ansible/roles/profile_haproxy/templates/stick-tables.cfg.j2",
+      "status": "complete",
+      "description": "Stick tables configuration template",
+      "notes": ""
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_haproxy/manifests/service.pp",
+      "target_path": "ansible/roles/profile_haproxy/templates/haproxy-override.conf.j2",
+      "status": "complete",
+      "description": "Systemd override template",
+      "notes": ""
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_haproxy/manifests/service.pp",
+      "target_path": "ansible/roles/profile_haproxy/templates/haproxy-logrotate.j2",
+      "status": "complete",
+      "description": "Logrotate configuration template",
+      "notes": ""
+    },
+    {
+      "category": "files",
+      "source_path": "modules/profile_haproxy/lib/facter/haproxy_version.rb",
+      "target_path": "ansible/roles/profile_haproxy/tasks/facts.yml",
+      "status": "complete",
+      "description": "Custom facts deployment tasks",
+      "notes": ""
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_haproxy/templates/haproxy.defaults.erb",
+      "target_path": "ansible/roles/profile_haproxy/templates/haproxy.defaults.j2",
+      "status": "complete",
+      "description": "HAProxy defaults configuration template",
+      "notes": "These templates were already created as part of the main haproxy.cfg.j2 template split."
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_haproxy/templates/haproxy.global.erb",
+      "target_path": "ansible/roles/profile_haproxy/templates/haproxy.global.j2",
+      "status": "complete",
+      "description": "HAProxy global configuration template",
+      "notes": "These templates were already created as part of the main haproxy.cfg.j2 template split."
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_haproxy/templates/haproxy.listen.erb",
+      "target_path": "ansible/roles/profile_haproxy/templates/haproxy.listen.j2",
+      "status": "complete",
+      "description": "HAProxy listen configuration template",
+      "notes": "These templates were already created as part of the main haproxy.cfg.j2 template split."
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_haproxy/templates/haproxy.frontend.erb",
+      "target_path": "ansible/roles/profile_haproxy/templates/haproxy.frontend.j2",
+      "status": "complete",
+      "description": "HAProxy frontend configuration template",
+      "notes": "These templates were already created as part of the main haproxy.cfg.j2 template split."
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_haproxy/templates/haproxy.backend.erb",
+      "target_path": "ansible/roles/profile_haproxy/templates/haproxy.backend.j2",
+      "status": "complete",
+      "description": "HAProxy backend configuration template",
+      "notes": "These templates were already created as part of the main haproxy.cfg.j2 template split."
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_haproxy/templates/haproxy.balancermember.erb",
+      "target_path": "ansible/roles/profile_haproxy/templates/haproxy.balancermember.j2",
+      "status": "complete",
+      "description": "HAProxy balancermember configuration template",
+      "notes": "These templates were already created as part of the main haproxy.cfg.j2 template split."
+    },
+    {
+      "category": "attributes",
+      "source_path": "modules/profile_haproxy/manifests/params.pp",
+      "target_path": "ansible/roles/profile_haproxy/defaults/main.yml",
+      "status": "complete",
+      "description": "Default variables for HAProxy role",
+      "notes": ""
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_haproxy",
+      "target_path": "ansible/roles/profile_haproxy/meta/main.yml",
+      "status": "complete",
+      "description": "Role metadata",
+      "notes": ""
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_haproxy/manifests/service.pp",
+      "target_path": "ansible/roles/profile_haproxy/handlers/main.yml",
+      "status": "complete",
+      "description": "Role handlers",
+      "notes": ""
+    },
+    {
+      "category": "molecule",
+      "source_path": "modules/profile_haproxy/spec",
+      "target_path": "ansible/roles/profile_haproxy/molecule/default/molecule.yml",
+      "status": "complete",
+      "description": "Molecule test configuration",
+      "notes": ""
+    },
+    {
+      "category": "molecule",
+      "source_path": "modules/profile_haproxy/spec",
+      "target_path": "ansible/roles/profile_haproxy/molecule/default/converge.yml",
+      "status": "complete",
+      "description": "Molecule test playbook",
+      "notes": ""
+    },
+    {
+      "category": "molecule",
+      "source_path": "modules/profile_haproxy/spec",
+      "target_path": "ansible/roles/profile_haproxy/molecule/default/verify.yml",
+      "status": "complete",
+      "description": "Molecule test verification",
+      "notes": ""
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_haproxy",
+      "target_path": "ansible/roles/profile_haproxy/README.md",
+      "status": "complete",
+      "description": "Role README documentation",
+      "notes": "Created comprehensive README.md with role documentation, requirements, variables, and usage examples."
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_haproxy/templates/haproxy.cfg.erb",
+      "target_path": "ansible/roles/profile_haproxy/templates/haproxy.global.j2",
+      "status": "complete",
+      "description": "HAProxy global section template",
+      "notes": "Split from main template for better modularity"
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_haproxy/templates/haproxy.cfg.erb",
+      "target_path": "ansible/roles/profile_haproxy/templates/haproxy.defaults.j2",
+      "status": "complete",
+      "description": "HAProxy defaults section template",
+      "notes": "Split from main template for better modularity"
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_haproxy/templates/haproxy.cfg.erb",
+      "target_path": "ansible/roles/profile_haproxy/templates/haproxy.frontend.j2",
+      "status": "complete",
+      "description": "HAProxy frontend section template",
+      "notes": "Split from main template for better modularity"
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_haproxy/templates/haproxy.cfg.erb",
+      "target_path": "ansible/roles/profile_haproxy/templates/haproxy.listen.j2",
+      "status": "complete",
+      "description": "HAProxy listen section template",
+      "notes": "Split from main template for better modularity"
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_haproxy/templates/haproxy.cfg.erb",
+      "target_path": "ansible/roles/profile_haproxy/templates/haproxy.backend.j2",
+      "status": "complete",
+      "description": "HAProxy backend section template",
+      "notes": "Split from main template for better modularity"
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_haproxy/templates/haproxy.cfg.erb",
+      "target_path": "ansible/roles/profile_haproxy/templates/haproxy.balancermember.j2",
+      "status": "complete",
+      "description": "HAProxy balancermember template",
+      "notes": "Split from main template for better modularity"
+    },
+    {
+      "category": "files",
+      "source_path": "modules/profile_haproxy/manifests/init.pp",
+      "target_path": "ansible/roles/profile_haproxy/defaults/main.yml",
+      "status": "complete",
+      "description": "HAProxy role default variables",
+      "notes": "Created from Puppet parameters"
+    },
+    {
+      "category": "files",
+      "source_path": "modules/profile_haproxy/metadata.json",
+      "target_path": "ansible/roles/profile_haproxy/meta/main.yml",
+      "status": "complete",
+      "description": "HAProxy role meta information",
+      "notes": "Created from scratch for Ansible Galaxy compatibility"
+    },
+    {
+      "category": "files",
+      "source_path": "modules/profile_haproxy",
+      "target_path": "ansible/roles/profile_haproxy/.github/workflows/ansible-ci.yml",
+      "status": "complete",
+      "description": "HAProxy CI workflow",
+      "notes": "Created GitHub Actions workflow for CI testing with ansible-lint."
+    },
+    {
+      "category": "files",
+      "source_path": "modules/profile_haproxy/files/errors",
+      "target_path": "ansible/roles/profile_haproxy/files/errors/503.http",
+      "status": "complete",
+      "description": "HAProxy 503 error page",
+      "notes": "Created custom error page for 503 Service Unavailable errors."
+    },
+    {
+      "category": "files",
+      "source_path": "modules/profile_haproxy/files/errors",
+      "target_path": "ansible/roles/profile_haproxy/files/errors/408.http",
+      "status": "complete",
+      "description": "HAProxy 408 error page",
+      "notes": "Created custom error page for 408 Request Timeout errors."
+    },
+    {
+      "category": "molecule",
+      "source_path": "ansible/roles/profile_haproxy/molecule/default/converge.yml",
+      "target_path": "ansible/roles/profile_haproxy/molecule/default/converge.yml",
+      "status": "complete",
+      "description": "Created converge.yml for profile_haproxy role that uses container-safe testing practices",
+      "notes": "Created a converge.yml file that:\n1. Uses the delegated driver (not Docker/Podman)\n2. Doesn't use become: true\n3. Doesn't use include_role\n4. Places all file paths under /tmp/molecule_test/\n5. Tests the role's functionality in a container-safe way"
+    },
+    {
+      "category": "molecule",
+      "source_path": "ansible/roles/profile_haproxy/molecule/default/verify.yml",
+      "target_path": "ansible/roles/profile_haproxy/molecule/default/verify.yml",
+      "status": "complete",
+      "description": "Created verify.yml for profile_haproxy role that uses container-safe testing practices",
+      "notes": "Created a verify.yml file that:\n1. Uses the delegated driver (not Docker/Podman)\n2. Doesn't use become: true\n3. Doesn't use include_role\n4. Places all file paths under /tmp/molecule_test/\n5. Tests the role's functionality in a container-safe way\n6. Uses tags to skip tests that won't work in containers"
+    }
+  ]
+}

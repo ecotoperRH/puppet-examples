@@ -1,0 +1,10 @@
+# HAProxy frontend configuration
+# Managed by Ansible — do not edit manually
+
+frontend http_front
+    bind *:80
+{% if ssl_enabled %}
+    bind *:443 ssl crt {{ ssl_cert_path }}/haproxy.pem
+    http-request redirect scheme https unless { ssl_fc }
+{% endif %}
+    default_backend webservers

@@ -1,0 +1,218 @@
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+  - name: Check main HAProxy config file exists
+    ansible.builtin.stat:
+      path: /tmp/molecule_test/etc/haproxy/haproxy.cfg
+    register: haproxy_config
+  - name: Assert HAProxy config file exists
+    ansible.builtin.assert:
+      that:
+      - haproxy_config.stat.exists
+      - haproxy_config.stat.size > 0
+      fail_msg: HAProxy config file not found or empty
+      success_msg: HAProxy config file exists and has content
+  - name: Check webservers backend config exists
+    ansible.builtin.stat:
+      path: /tmp/molecule_test/etc/haproxy/conf.d/webservers.cfg
+    register: webservers_config
+  - name: Assert webservers backend config exists
+    ansible.builtin.assert:
+      that:
+      - webservers_config.stat.exists
+      - webservers_config.stat.size > 0
+      fail_msg: Webservers backend config not found or empty
+      success_msg: Webservers backend config exists and has content
+  - name: Check API backend config exists
+    ansible.builtin.stat:
+      path: /tmp/molecule_test/etc/haproxy/conf.d/api.cfg
+    register: api_config
+  - name: Assert API backend config exists
+    ansible.builtin.assert:
+      that:
+      - api_config.stat.exists
+      - api_config.stat.size > 0
+      fail_msg: API backend config not found or empty
+      success_msg: API backend config exists and has content
+  - name: Check internal monitoring backend config exists
+    ansible.builtin.stat:
+      path: /tmp/molecule_test/etc/haproxy/conf.d/internal_monitoring.cfg
+    register: monitoring_config
+  - name: Assert internal monitoring backend config exists
+    ansible.builtin.assert:
+      that:
+      - monitoring_config.stat.exists
+      - monitoring_config.stat.size > 0
+      fail_msg: Internal monitoring backend config not found or empty
+      success_msg: Internal monitoring backend config exists and has content
+  - name: Check stick tables config exists
+    ansible.builtin.stat:
+      path: /tmp/molecule_test/etc/haproxy/conf.d/stick-tables.cfg
+    register: stick_tables_config
+  - name: Assert stick tables config exists
+    ansible.builtin.assert:
+      that:
+      - stick_tables_config.stat.exists
+      - stick_tables_config.stat.size > 0
+      fail_msg: Stick tables config not found or empty
+      success_msg: Stick tables config exists and has content
+  - name: Check 503 error page exists
+    ansible.builtin.stat:
+      path: /tmp/molecule_test/etc/haproxy/errors/503.http
+    register: error_503
+  - name: Assert 503 error page exists
+    ansible.builtin.assert:
+      that:
+      - error_503.stat.exists
+      - error_503.stat.size > 0
+      fail_msg: 503 error page not found or empty
+      success_msg: 503 error page exists and has content
+  - name: Check 408 error page exists
+    ansible.builtin.stat:
+      path: /tmp/molecule_test/etc/haproxy/errors/408.http
+    register: error_408
+  - name: Assert 408 error page exists
+    ansible.builtin.assert:
+      that:
+      - error_408.stat.exists
+      - error_408.stat.size > 0
+      fail_msg: 408 error page not found or empty
+      success_msg: 408 error page exists and has content
+  - name: Check systemd override file exists
+    ansible.builtin.stat:
+      path: /tmp/molecule_test/etc/systemd/system/haproxy.service.d/override.conf
+    register: systemd_override
+  - name: Assert systemd override file exists
+    ansible.builtin.assert:
+      that:
+      - systemd_override.stat.exists
+      - systemd_override.stat.size > 0
+      fail_msg: Systemd override file not found or empty
+      success_msg: Systemd override file exists and has content
+  - name: Check logrotate config exists
+    ansible.builtin.stat:
+      path: /tmp/molecule_test/etc/logrotate.d/haproxy
+    register: logrotate_config
+  - name: Assert logrotate config exists
+    ansible.builtin.assert:
+      that:
+      - logrotate_config.stat.exists
+      - logrotate_config.stat.size > 0
+      fail_msg: Logrotate config not found or empty
+      success_msg: Logrotate config exists and has content
+  - name: Get HAProxy config content
+    ansible.builtin.slurp:
+      src: /tmp/molecule_test/etc/haproxy/haproxy.cfg
+    register: haproxy_config_content
+  - name: Assert HAProxy config contains required sections
+    ansible.builtin.assert:
+      that:
+      - '''global'' in (haproxy_config_content.content | b64decode)'
+      - '''defaults'' in (haproxy_config_content.content | b64decode)'
+      - '''frontend'' in (haproxy_config_content.content | b64decode)'
+      - '''stats'' in (haproxy_config_content.content | b64decode)'
+      fail_msg: HAProxy config missing required sections
+      success_msg: HAProxy config contains all required sections
+  - name: Get webservers backend content
+    ansible.builtin.slurp:
+      src: /tmp/molecule_test/etc/haproxy/conf.d/webservers.cfg
+    register: webservers_content
+  - name: Assert webservers backend contains required configuration
+    ansible.builtin.assert:
+      that:
+      - '''balance roundrobin'' in (webservers_content.content | b64decode)'
+      - '''option httpchk GET /health'' in (webservers_content.content | b64decode)'
+      - '''server web1-fra'' in (webservers_content.content | b64decode)'
+      - '''server web2-fra'' in (webservers_content.content | b64decode)'
+      - '''server web3-fra'' in (webservers_content.content | b64decode)'
+      fail_msg: Webservers backend missing required configuration
+      success_msg: Webservers backend contains all required configuration
+  - name: Get API backend content
+    ansible.builtin.slurp:
+      src: /tmp/molecule_test/etc/haproxy/conf.d/api.cfg
+    register: api_content
+  - name: Assert API backend contains required configuration
+    ansible.builtin.assert:
+      that:
+      - '''balance leastconn'' in (api_content.content | b64decode)'
+      - '''option httpchk GET /api/health'' in (api_content.content | b64decode)'
+      - '''server api1-fra'' in (api_content.content | b64decode)'
+      - '''server api2-fra'' in (api_content.content | b64decode)'
+      fail_msg: API backend missing required configuration
+      success_msg: API backend contains all required configuration
+  - name: Check HAProxy service status
+    ansible.builtin.service_facts: null
+    tags: molecule-notest
+  - name: Assert HAProxy service is running
+    ansible.builtin.assert:
+      that:
+      - '''haproxy.service'' in ansible_facts.services'
+      - ansible_facts.services['haproxy.service'].state == 'running'
+      fail_msg: HAProxy service is not running
+      success_msg: HAProxy service is running
+    tags: molecule-notest
+  - name: Check if HAProxy HTTP port is listening
+    ansible.builtin.wait_for:
+      port: 80
+      timeout: 1
+    ignore_errors: true
+    register: http_port_check
+    tags: molecule-notest
+  - name: Assert HTTP port is listening
+    ansible.builtin.assert:
+      that:
+      - http_port_check is succeeded
+      fail_msg: HAProxy HTTP port (80) is not listening
+      success_msg: HAProxy HTTP port (80) is listening
+    tags: molecule-notest
+  - name: Check if HAProxy HTTPS port is listening
+    ansible.builtin.wait_for:
+      port: 443
+      timeout: 1
+    ignore_errors: true
+    register: https_port_check
+    when: haproxy_ssl_enabled | bool
+    tags: molecule-notest
+  - name: Assert HTTPS port is listening
+    ansible.builtin.assert:
+      that:
+      - https_port_check is succeeded
+      fail_msg: HAProxy HTTPS port (443) is not listening
+      success_msg: HAProxy HTTPS port (443) is listening
+    when: haproxy_ssl_enabled | bool
+    tags: molecule-notest
+  - name: Check if HAProxy stats port is listening
+    ansible.builtin.wait_for:
+      port: '{{ haproxy_stats_port }}'
+      timeout: 1
+    ignore_errors: true
+    register: stats_port_check
+    when: haproxy_stats_enabled | bool
+    tags: molecule-notest
+  - name: Assert stats port is listening
+    ansible.builtin.assert:
+      that:
+      - stats_port_check is succeeded
+      fail_msg: HAProxy stats port is not listening
+      success_msg: HAProxy stats port is listening
+    when: haproxy_stats_enabled | bool
+    tags: molecule-notest
+  - name: Check HAProxy stats page
+    ansible.builtin.uri:
+      url: http://localhost:{{ haproxy_stats_port }}{{ haproxy_stats_uri }}
+      user: '{{ haproxy_stats_user }}'
+      password: '{{ haproxy_stats_password }}'
+      force_basic_auth: true
+      status_code: 200
+    register: stats_page
+    when: haproxy_stats_enabled | bool
+    tags: molecule-notest
+  - name: Assert stats page is accessible
+    ansible.builtin.assert:
+      that:
+      - stats_page is succeeded
+      fail_msg: HAProxy stats page is not accessible
+      success_msg: HAProxy stats page is accessible
+    when: haproxy_stats_enabled | bool
+    tags: molecule-notest
