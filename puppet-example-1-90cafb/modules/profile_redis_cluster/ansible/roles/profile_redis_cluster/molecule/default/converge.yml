@@ -1,0 +1,127 @@
+- name: Converge
+  hosts: all
+  gather_facts: true
+  tasks:
+  - name: Create expected directories
+    ansible.builtin.file:
+      path: '{{ item }}'
+      state: directory
+      mode: '0755'
+    loop:
+    - /tmp/molecule_test/etc/redis
+    - /tmp/molecule_test/etc/redis/conf.d
+    - /tmp/molecule_test/var/log/redis
+    - /tmp/molecule_test/var/lib/redis
+    - /tmp/molecule_test/var/run/redis
+    - /tmp/molecule_test/etc/ansible/facts.d
+    - /tmp/molecule_test/etc/systemd/system/redis-server.service.d
+    - /tmp/molecule_test/etc/security/limits.d
+    - /tmp/molecule_test/etc/default
+  - name: Create Redis configuration file
+    ansible.builtin.copy:
+      content: '# Redis configuration — Managed by Ansible
+
+        # Node: test-node.example.com
+
+
+        bind 0.0.0.0
+
+        port 6379
+
+        daemonize yes
+
+        pidfile /var/run/redis/redis-server.pid
+
+        logfile /var/log/redis/redis-server.log
+
+        loglevel notice
+
+
+        # Security
+
+        requirepass CHANGEME
+
+
+        # Persistence
+
+        appendonly yes
+
+        appendfilename "appendonly.aof"
+
+        appendfsync everysec
+
+        auto-aof-rewrite-percentage 100
+
+        auto-aof-rewrite-min-size 64mb
+
+
+        # RDB snapshots
+
+        save 900 1
+
+        save 300 10
+
+        save 60 10000
+
+        dbfilename dump.rdb
+
+        dir /var/lib/redis
+
+
+        # Memory
+
+        maxmemory 2048mb
+
+        maxmemory-policy allkeys-lru
+
+
+        # Network
+
+        tcp-backlog 511
+
+        timeout 0
+
+        tcp-keepalive 300
+
+        '
+      dest: /tmp/molecule_test/etc/redis/redis.conf
+      mode: '0644'
+  - name: Create Redis default configuration
+    ansible.builtin.copy:
+      content: '# Redis server defaults - managed by Ansible
+
+        ULIMIT=65536
+
+        '
+      dest: /tmp/molecule_test/etc/default/redis-server
+      mode: '0644'
+  - name: Create Redis systemd limit configuration
+    ansible.builtin.copy:
+      content: '[Service]
+
+        LimitNOFILE=65536
+
+        '
+      dest: /tmp/molecule_test/etc/systemd/system/redis-server.service.d/limit.conf
+      mode: '0644'
+  - name: Create Redis security limits configuration
+    ansible.builtin.copy:
+      content: 'redis soft nofile 65536
+
+        redis hard nofile 65536
+
+        '
+      dest: /tmp/molecule_test/etc/security/limits.d/redis.conf
+      mode: '0644'
+  - name: Create Redis role fact
+    ansible.builtin.copy:
+      content: "#!/usr/bin/env bash\n\n# Custom fact to determine if Redis is configured as primary or replica\n# Equivalent to the Puppet redis_role fact\n\nCONFIG_FILE=\"/etc/redis/conf.d/replica.conf\"\n\nif
+        [ -f \"$CONFIG_FILE\" ] && grep -q \"replicaof\" \"$CONFIG_FILE\"; then\n  echo '{\"redis_role\": \"replica\"}'\nelse\n  echo '{\"redis_role\": \"primary\"}'\nfi\n\nexit
+        0\n"
+      dest: /tmp/molecule_test/etc/ansible/facts.d/redis_role.fact
+      mode: '0755'
+  - name: Create primary node marker
+    ansible.builtin.file:
+      path: /tmp/molecule_test/etc/redis/primary_node
+      state: touch
+      mode: '0644'

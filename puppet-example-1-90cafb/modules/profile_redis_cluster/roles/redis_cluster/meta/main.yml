@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  role_name: redis_cluster
+  namespace: x2a
+  author: Ansible Migration Team
+  description: Configures a Redis server as part of a Redis cluster
+  license: Apache-2.0
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+  galaxy_tags:
+    - redis
+    - cache
+    - database
+    - cluster
+dependencies: []

@@ -1,0 +1,21 @@
+---
+- name: Create custom facts directory
+  ansible.builtin.file:
+    path: /etc/ansible/facts.d
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+  become: true
+- name: Deploy Redis role custom fact
+  ansible.builtin.copy:
+    src: redis_role.fact
+    dest: /etc/ansible/facts.d/redis_role.fact
+    mode: "0755"
+    owner: root
+    group: root
+  become: true
+- name: Re-run setup to gather custom facts
+  ansible.builtin.setup:
+    filter: ansible_local
+  become: true

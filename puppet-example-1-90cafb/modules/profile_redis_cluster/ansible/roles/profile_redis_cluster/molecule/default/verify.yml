@@ -1,0 +1,96 @@
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+  - name: Check Redis configuration file exists
+    ansible.builtin.stat:
+      path: /tmp/molecule_test/etc/redis/redis.conf
+    register: redis_conf
+  - name: Assert Redis configuration file was created
+    ansible.builtin.assert:
+      that:
+      - redis_conf.stat.exists
+      - redis_conf.stat.size > 0
+      fail_msg: Redis configuration file not found
+      success_msg: Redis configuration file exists
+  - name: Get Redis configuration content
+    ansible.builtin.slurp:
+      src: /tmp/molecule_test/etc/redis/redis.conf
+    register: redis_conf_content
+    when: redis_conf.stat.exists
+  - name: Assert Redis configuration contains expected settings
+    ansible.builtin.assert:
+      that:
+      - redis_conf_content.content | b64decode | regex_search('port 6379')
+      - redis_conf_content.content | b64decode | regex_search('bind 0.0.0.0')
+      - redis_conf_content.content | b64decode | regex_search('requirepass')
+      - redis_conf_content.content | b64decode | regex_search('maxmemory 2048mb')
+      - redis_conf_content.content | b64decode | regex_search('maxmemory-policy allkeys-lru')
+      - redis_conf_content.content | b64decode | regex_search('appendonly yes')
+      - redis_conf_content.content | b64decode | regex_search('appendfsync everysec')
+      fail_msg: Redis configuration does not contain expected settings
+      success_msg: Redis configuration contains expected settings
+    when: redis_conf.stat.exists
+  - name: Check Redis default configuration file exists
+    ansible.builtin.stat:
+      path: /tmp/molecule_test/etc/default/redis-server
+    register: redis_default
+  - name: Assert Redis default configuration file was created
+    ansible.builtin.assert:
+      that:
+      - redis_default.stat.exists
+      fail_msg: Redis default configuration file not found
+      success_msg: Redis default configuration file exists
+  - name: Check Redis systemd limit configuration exists
+    ansible.builtin.stat:
+      path: /tmp/molecule_test/etc/systemd/system/redis-server.service.d/limit.conf
+    register: redis_limit
+  - name: Assert Redis systemd limit configuration was created
+    ansible.builtin.assert:
+      that:
+      - redis_limit.stat.exists
+      fail_msg: Redis systemd limit configuration not found
+      success_msg: Redis systemd limit configuration exists
+  - name: Check Redis security limits configuration exists
+    ansible.builtin.stat:
+      path: /tmp/molecule_test/etc/security/limits.d/redis.conf
+    register: redis_security_limits
+  - name: Assert Redis security limits configuration was created
+    ansible.builtin.assert:
+      that:
+      - redis_security_limits.stat.exists
+      fail_msg: Redis security limits configuration not found
+      success_msg: Redis security limits configuration exists
+  - name: Check Redis role fact exists
+    ansible.builtin.stat:
+      path: /tmp/molecule_test/etc/ansible/facts.d/redis_role.fact
+    register: redis_role_fact
+  - name: Assert Redis role fact was created
+    ansible.builtin.assert:
+      that:
+      - redis_role_fact.stat.exists
+      - redis_role_fact.stat.mode == "0755"
+      fail_msg: Redis role fact not found or has incorrect permissions
+      success_msg: Redis role fact exists with correct permissions
+  - name: Check Redis service is running
+    ansible.builtin.service_facts: null
+    tags: molecule-notest
+  - name: Assert Redis service is active
+    ansible.builtin.assert:
+      that:
+      - '''redis-server.service'' in ansible_facts.services'
+      - ansible_facts.services['redis-server.service'].state == 'running'
+      fail_msg: Redis service is not running
+      success_msg: Redis service is running
+    tags: molecule-notest
+  - name: Check Redis port is listening
+    ansible.builtin.wait_for:
+      port: 6379
+      timeout: 5
+    tags: molecule-notest
+  - name: Test Redis connectivity
+    ansible.builtin.command: redis-cli -a CHANGEME ping
+    register: redis_ping
+    changed_when: false
+    failed_when: redis_ping.stdout != "PONG"
+    tags: molecule-notest

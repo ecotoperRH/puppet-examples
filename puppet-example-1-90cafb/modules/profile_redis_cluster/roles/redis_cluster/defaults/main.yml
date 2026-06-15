@@ -1,0 +1,5 @@
+---
+redis_port: 6379
+maxmemory_mb: 2048
+maxmemory_policy: allkeys-lru
+redis_cluster_enabled: false

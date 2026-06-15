@@ -1,0 +1,1 @@
+redis_password: '{{ lookup(''env'', ''REDIS_PASSWORD'') | default(''changeme'') }}'

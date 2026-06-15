@@ -1,0 +1,31 @@
+---
+- name: Validate credential variables
+  ansible.builtin.include_tasks: validate_credentials.yml
+- name: Create directory for custom facts
+  ansible.builtin.file:
+    path: /etc/ansible/facts.d
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+  become: true
+- name: Deploy Redis role custom fact
+  ansible.builtin.copy:
+    src: redis_role.fact
+    dest: /etc/ansible/facts.d/redis_role.fact
+    mode: "0755"
+    owner: root
+    group: root
+  become: true
+- name: Include Redis role from eloy.redis collection
+  ansible.builtin.include_role:
+    name: eloy.redis.redis
+  vars:
+    redis_port: "{{ redis_port }}"
+    redis_requirepass: "{{ redis_password }}"
+    redis_maxmemory: "{{ maxmemory_mb }}mb"
+    redis_maxmemory_policy: "{{ maxmemory_policy }}"
+    redis_bind: 0.0.0.0
+    redis_aof_enabled: true
+    redis_aof_fsync: everysec
+    redis_manage_service: true
