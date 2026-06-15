@@ -1,0 +1,17 @@
+---
+# Systemd service management for the application.
+
+- name: Install systemd service file
+  ansible.builtin.template:
+    src: app.service.j2
+    dest: "/etc/systemd/system/{{ app_name }}.service"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart application service
+
+- name: Ensure application service is running and enabled
+  ansible.builtin.systemd:
+    name: "{{ app_name }}"
+    state: started
+    enabled: true

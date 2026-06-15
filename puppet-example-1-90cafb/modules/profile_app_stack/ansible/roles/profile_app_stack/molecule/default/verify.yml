@@ -1,0 +1,214 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+    # Check application directory structure
+    - name: Check application directory exists
+      ansible.builtin.stat:
+        path: /tmp/molecule_test/opt/myapp-api
+      register: app_dir
+
+    - name: Assert application directory was created
+      ansible.builtin.assert:
+        that:
+          - app_dir.stat.exists
+          - app_dir.stat.isdir
+        fail_msg: "Application directory not found"
+        success_msg: "Application directory exists"
+
+    # Check Python virtual environment
+    - name: Check Python virtual environment exists
+      ansible.builtin.stat:
+        path: /tmp/molecule_test/opt/myapp-api/venv/bin/activate
+      register: venv_activate
+
+    - name: Assert Python virtual environment was created
+      ansible.builtin.assert:
+        that:
+          - venv_activate.stat.exists
+        fail_msg: "Python virtual environment not found"
+        success_msg: "Python virtual environment exists"
+
+    # Check environment file
+    - name: Check environment file exists
+      ansible.builtin.stat:
+        path: /tmp/molecule_test/opt/myapp-api/.env
+      register: env_file
+
+    - name: Assert environment file was created
+      ansible.builtin.assert:
+        that:
+          - env_file.stat.exists
+          - env_file.stat.size > 0
+        fail_msg: "Environment file not found or empty"
+        success_msg: "Environment file exists"
+
+    # Check environment file content
+    - name: Get environment file content
+      ansible.builtin.slurp:
+        src: /tmp/molecule_test/opt/myapp-api/.env
+      register: env_content
+
+    - name: Assert environment file contains required variables
+      ansible.builtin.assert:
+        that:
+          - env_decoded.find('DATABASE_URL=') != -1
+          - env_decoded.find('APP_NAME=myapp-api') != -1
+          - env_decoded.find('APP_PORT=8000') != -1
+          - env_decoded.find('SECRET_KEY=') != -1
+          - env_decoded.find('LOG_LEVEL=') != -1
+          - env_decoded.find('LOG_DIR=') != -1
+          - env_decoded.find('WORKERS=') != -1
+        fail_msg: "Environment file missing required variables"
+        success_msg: "Environment file contains all required variables"
+      vars:
+        env_decoded: "{{ env_content.content | b64decode }}"
+
+    # Check systemd service file
+    - name: Check systemd service file exists
+      ansible.builtin.stat:
+        path: /tmp/molecule_test/etc/systemd/system/myapp-api.service
+      register: service_file
+
+    - name: Assert systemd service file was created
+      ansible.builtin.assert:
+        that:
+          - service_file.stat.exists
+          - service_file.stat.size > 0
+        fail_msg: "Systemd service file not found or empty"
+        success_msg: "Systemd service file exists"
+
+    # Check systemd service file content
+    - name: Get systemd service file content
+      ansible.builtin.slurp:
+        src: /tmp/molecule_test/etc/systemd/system/myapp-api.service
+      register: service_content
+
+    - name: Assert systemd service file contains required configuration
+      ansible.builtin.assert:
+        that:
+          - service_decoded.find('ExecStart=') != -1
+          - service_decoded.find('--workers') != -1
+          - service_decoded.find('--worker-class') != -1
+          - service_decoded.find('--max-requests') != -1
+        fail_msg: "Systemd service file missing required configuration"
+        success_msg: "Systemd service file contains required configuration"
+      vars:
+        service_decoded: "{{ service_content.content | b64decode }}"
+
+    # Check log directory
+    - name: Check log directory exists
+      ansible.builtin.stat:
+        path: /tmp/molecule_test/var/log/myapp-api
+      register: log_dir
+
+    - name: Assert log directory was created
+      ansible.builtin.assert:
+        that:
+          - log_dir.stat.exists
+          - log_dir.stat.isdir
+        fail_msg: "Log directory not found"
+        success_msg: "Log directory exists"
+
+    # Check logrotate configuration
+    - name: Check logrotate configuration exists
+      ansible.builtin.stat:
+        path: /tmp/molecule_test/etc/logrotate.d/myapp-api
+      register: logrotate_file
+
+    - name: Assert logrotate configuration was created
+      ansible.builtin.assert:
+        that:
+          - logrotate_file.stat.exists
+          - logrotate_file.stat.size > 0
+        fail_msg: "Logrotate configuration not found or empty"
+        success_msg: "Logrotate configuration exists"
+
+    # Check health check script
+    - name: Check health check script exists
+      ansible.builtin.stat:
+        path: /tmp/molecule_test/usr/local/bin/app-healthcheck.sh
+      register: healthcheck_script
+
+    - name: Assert health check script was created
+      ansible.builtin.assert:
+        that:
+          - healthcheck_script.stat.exists
+          - healthcheck_script.stat.size > 0
+          - healthcheck_script.stat.mode == "0755"
+        fail_msg: "Health check script not found, empty, or has incorrect permissions"
+        success_msg: "Health check script exists with correct permissions"
+
+    # Check database backup script
+    - name: Check database backup script exists
+      ansible.builtin.stat:
+        path: /tmp/molecule_test/usr/local/bin/db-backup.sh
+      register: backup_script
+
+    - name: Assert database backup script was created
+      ansible.builtin.assert:
+        that:
+          - backup_script.stat.exists
+          - backup_script.stat.size > 0
+          - backup_script.stat.mode == "0750"
+        fail_msg: "Database backup script not found, empty, or has incorrect permissions"
+        success_msg: "Database backup script exists with correct permissions"
+
+    # Check alembic configuration
+    - name: Check alembic configuration exists
+      ansible.builtin.stat:
+        path: /tmp/molecule_test/opt/myapp-api/alembic.ini
+      register: alembic_config
+
+    - name: Assert alembic configuration was created
+      ansible.builtin.assert:
+        that:
+          - alembic_config.stat.exists
+          - alembic_config.stat.size > 0
+        fail_msg: "Alembic configuration not found or empty"
+        success_msg: "Alembic configuration exists"
+
+    # Check migrations directory
+    - name: Check migrations directory exists
+      ansible.builtin.stat:
+        path: /tmp/molecule_test/opt/myapp-api/migrations/env.py
+      register: migrations_env
+
+    - name: Assert migrations directory was created
+      ansible.builtin.assert:
+        that:
+          - migrations_env.stat.exists
+          - migrations_env.stat.size > 0
+        fail_msg: "Migrations environment file not found or empty"
+        success_msg: "Migrations environment file exists"
+
+    # Service status check (tagged to skip in container)
+    - name: Check service status
+      ansible.builtin.service_facts:
+      tags: molecule-notest
+
+    - name: Assert service is active
+      ansible.builtin.assert:
+        that:
+          - "'myapp-api.service' in ansible_facts.services"
+          - "ansible_facts.services['myapp-api.service'].state == 'running'"
+        fail_msg: "Service myapp-api not running"
+        success_msg: "Service myapp-api is running"
+      tags: molecule-notest
+
+    # HTTP health check (tagged to skip in container)
+    - name: Check application health endpoint
+      ansible.builtin.uri:
+        url: http://localhost:8000/health
+        status_code: 200
+      register: health_check
+      tags: molecule-notest
+
+    - name: Assert health check passed
+      ansible.builtin.assert:
+        that:
+          - health_check.status == 200
+        fail_msg: "Health check failed"
+        success_msg: "Health check passed"
+      tags: molecule-notest

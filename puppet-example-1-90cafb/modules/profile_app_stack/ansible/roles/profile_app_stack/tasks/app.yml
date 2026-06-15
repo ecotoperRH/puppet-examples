@@ -1,0 +1,74 @@
+---
+- name: Create application directory
+  ansible.builtin.file:
+    path: "{{ app_dir }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0755"
+- name: Clone application repository
+  ansible.builtin.git:
+    repo: "{{ app_repo }}"
+    dest: "{{ app_dir }}"
+    version: "{{ app_revision }}"
+    update: true
+    force: true
+  become: true
+  become_user: "{{ app_user }}"
+- name: Create virtualenv
+  ansible.builtin.command:
+    cmd: "{{ python_version }} -m venv {{ app_dir }}/venv"
+    creates: "{{ app_dir }}/venv/bin/activate"
+  become: true
+  become_user: "{{ app_user }}"
+- name: Install Python requirements
+  ansible.builtin.pip:
+    requirements: "{{ app_dir }}/requirements.txt"
+    virtualenv: "{{ app_dir }}/venv"
+  become: true
+  become_user: "{{ app_user }}"
+  register: pip_install
+  notify: Restart application service
+- name: Install extra pip packages
+  ansible.builtin.pip:
+    name: "{{ item }}"
+    virtualenv: "{{ app_dir }}/venv"
+  become: true
+  become_user: "{{ app_user }}"
+  loop: "{{ pip_packages | default([]) }}"
+  when: pip_packages is defined and pip_packages | length > 0
+- name: Create environment file
+  ansible.builtin.template:
+    src: app.env.j2
+    dest: "{{ app_dir }}/.env"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0600"
+  notify: Restart application service
+- name: Install health check script
+  ansible.builtin.copy:
+    src: healthcheck.sh
+    dest: /usr/local/bin/app-healthcheck.sh
+    owner: root
+    group: root
+    mode: "0755"
+- name: Check if alembic is initialized
+  ansible.builtin.stat:
+    path: "{{ app_dir }}/alembic.ini"
+  register: alembic_ini
+- name: Check if migrations directory exists
+  ansible.builtin.stat:
+    path: "{{ app_dir }}/migrations/env.py"
+  register: migrations_dir
+  when: alembic_ini.stat.exists
+- name: Run database migrations
+  ansible.builtin.command:
+    cmd: "{{ app_dir }}/venv/bin/python -m alembic upgrade head"
+    chdir: "{{ app_dir }}"
+  become: true
+  become_user: "{{ app_user }}"
+  environment:
+    DATABASE_URL: "{{ db_url }}"
+  when: alembic_ini.stat.exists and migrations_dir.stat.exists
+  register: db_migrations
+  changed_when: "'No migrations to apply' not in db_migrations.stdout"

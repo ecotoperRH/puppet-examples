@@ -1,0 +1,40 @@
+---
+- name: Install Python and development packages
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - "{{ python_version }}"
+    - "{{ python_version }}-pip"
+    - "{{ python_version }}-venv"
+    - "{{ python_version }}-dev"
+    - git
+    - build-essential
+- name: Create application group
+  ansible.builtin.group:
+    name: "{{ app_group }}"
+    system: true
+    state: present
+- name: Create application user
+  ansible.builtin.user:
+    name: "{{ app_user }}"
+    group: "{{ app_group }}"
+    home: "{{ app_dir }}"
+    shell: /bin/bash
+    system: true
+    create_home: false
+    state: present
+- name: Create log directory
+  ansible.builtin.file:
+    path: "{{ log_dir }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0755"
+- name: Configure log rotation
+  ansible.builtin.template:
+    src: logrotate.conf.j2
+    dest: /etc/logrotate.d/{{ app_name }}
+    owner: root
+    group: root
+    mode: "0644"

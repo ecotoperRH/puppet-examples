@@ -1,0 +1,14 @@
+---
+- name: Set database URL
+  ansible.builtin.set_fact:
+    db_url: postgresql://{{ db_user }}:{{ db_password }}@{{ db_host }}:{{ db_port }}/{{ db_name }}
+- name: Include Python setup tasks
+  ansible.builtin.import_tasks: python.yml
+- name: Include database setup tasks
+  ansible.builtin.import_tasks: database.yml
+- name: Include application deployment tasks
+  ansible.builtin.import_tasks: app.yml
+- name: Include service configuration tasks
+  ansible.builtin.import_tasks: service.yml
+- name: Include monitoring setup tasks
+  ansible.builtin.import_tasks: monitoring.yml

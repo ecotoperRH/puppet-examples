@@ -1,0 +1,253 @@
+{
+  "module_name": "profile_app_stack",
+  "items": [
+    {
+      "category": "credentials",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/aap-configuration/controller_credential_types.yml",
+      "status": "complete",
+      "description": "AAP credential types configuration",
+      "notes": ""
+    },
+    {
+      "category": "credentials",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/aap-configuration/controller_credentials.yml",
+      "status": "complete",
+      "description": "AAP credentials configuration",
+      "notes": ""
+    },
+    {
+      "category": "credentials",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/tasks/validate_credentials.yml",
+      "status": "complete",
+      "description": "Credential validation tasks",
+      "notes": ""
+    },
+    {
+      "category": "structure",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/meta/main.yml",
+      "status": "complete",
+      "description": "Role metadata",
+      "notes": "Created standard meta/main.yml"
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_app_stack/manifests/init.pp",
+      "target_path": "ansible/roles/profile_app_stack/tasks/main.yml",
+      "status": "complete",
+      "description": "Main tasks file",
+      "notes": "Converted Puppet init.pp to Ansible main.yml, setting up the task dependency chain with import_tasks"
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_app_stack/data/common.yaml",
+      "target_path": "ansible/roles/profile_app_stack/defaults/main.yml",
+      "status": "complete",
+      "description": "Default variables",
+      "notes": "Converted Puppet Hiera common.yaml to Ansible defaults/main.yml, removing namespace prefixes and using AAP credential variables for secrets"
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_app_stack/data/environment/production.yaml",
+      "target_path": "ansible/roles/profile_app_stack/vars/production.yml",
+      "status": "complete",
+      "description": "Production variables",
+      "notes": "Converted Puppet Hiera production.yaml to Ansible vars/production.yml, removing namespace prefixes and using AAP credential variables for secrets"
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_app_stack/data/environment/staging.yaml",
+      "target_path": "ansible/roles/profile_app_stack/vars/staging.yml",
+      "status": "complete",
+      "description": "Staging variables",
+      "notes": "Converted Puppet Hiera staging.yaml to Ansible vars/staging.yml, removing namespace prefixes and using AAP credential variables for secrets"
+    },
+    {
+      "category": "structure",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/handlers/main.yml",
+      "status": "complete",
+      "description": "Handlers file",
+      "notes": "Created handlers file with application service restart handler that includes daemon-reload"
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_app_stack/templates/app.env.erb",
+      "target_path": "ansible/roles/profile_app_stack/templates/app.env.j2",
+      "status": "complete",
+      "description": "Application environment file template",
+      "notes": "Converted ERB template to Jinja2 format, replacing @ prefixes with direct variable references and ERB conditionals with Jinja2 conditionals"
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_app_stack/templates/app.service.epp",
+      "target_path": "ansible/roles/profile_app_stack/templates/app.service.j2",
+      "status": "complete",
+      "description": "Systemd service file template",
+      "notes": "Converted EPP template to Jinja2 format, replacing parameter declarations with direct variable references"
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_app_stack/templates/logrotate.conf.erb",
+      "target_path": "ansible/roles/profile_app_stack/templates/logrotate.conf.j2",
+      "status": "complete",
+      "description": "Logrotate configuration template",
+      "notes": "Converted ERB template to Jinja2 format, replacing @ prefixes with direct variable references"
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_app_stack/manifests/python.pp",
+      "target_path": "ansible/roles/profile_app_stack/tasks/python.yml",
+      "status": "complete",
+      "description": "Python environment setup tasks",
+      "notes": "Converted Puppet manifest to Ansible tasks, using ansible.builtin modules for package, group, user, file, and template"
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_app_stack/manifests/database.pp",
+      "target_path": "ansible/roles/profile_app_stack/tasks/database.yml",
+      "status": "complete",
+      "description": "Database setup tasks",
+      "notes": "Converted Puppet manifest to Ansible tasks, using ansible.builtin modules for package, service, command, file, copy, and cron"
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_app_stack/manifests/app.pp",
+      "target_path": "ansible/roles/profile_app_stack/tasks/app.yml",
+      "status": "complete",
+      "description": "Application deployment tasks",
+      "notes": "Converted Puppet manifest to Ansible tasks, using ansible.builtin modules for git, command, pip, template, copy, and stat"
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_app_stack/manifests/service.pp",
+      "target_path": "ansible/roles/profile_app_stack/tasks/service.yml",
+      "status": "complete",
+      "description": "Service management tasks",
+      "notes": "Converted Puppet manifest to Ansible tasks, using ansible.builtin modules for template and systemd"
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_app_stack/manifests/monitoring.pp",
+      "target_path": "ansible/roles/profile_app_stack/tasks/monitoring.yml",
+      "status": "complete",
+      "description": "Monitoring setup tasks",
+      "notes": "Converted Puppet monitoring manifest to Ansible tasks, using ansible.builtin modules for package, service, and cron with conditional execution based on environment"
+    },
+    {
+      "category": "files",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/files/db-backup.sh",
+      "status": "complete",
+      "description": "Database backup script",
+      "notes": "Copied health check script to Ansible role files directory, updated comment to indicate Ansible management"
+    },
+    {
+      "category": "files",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/files/app-healthcheck.sh",
+      "status": "complete",
+      "description": "Application health check script",
+      "notes": "Created health check script with proper functionality to check application health endpoint"
+    },
+    {
+      "category": "dependencies",
+      "source_path": "collection:eloy.redis",
+      "target_path": "ansible/roles/profile_app_stack/requirements.yml",
+      "status": "complete",
+      "description": "Redis collection dependency",
+      "notes": "Created requirements.yml with eloy.redis collection from AAP Private Hub"
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/molecule/default/molecule.yml",
+      "status": "complete",
+      "description": "Molecule configuration",
+      "notes": "Created by MoleculeAgent (deterministic scaffold)"
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/molecule/default/converge.yml",
+      "status": "complete",
+      "description": "Molecule converge playbook",
+      "notes": "Created converge.yml that recreates the expected filesystem state under /tmp/molecule_test/ for container-safe testing"
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/molecule/default/verify.yml",
+      "status": "complete",
+      "description": "Molecule verify playbook",
+      "notes": "Created verify.yml that translates pre-flight checks into Ansible assertions with container-safe paths"
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/molecule/default/create.yml",
+      "status": "complete",
+      "description": "Molecule create playbook",
+      "notes": "Created by MoleculeAgent (deterministic scaffold)"
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/molecule/default/destroy.yml",
+      "status": "complete",
+      "description": "Molecule destroy playbook",
+      "notes": "Created by MoleculeAgent (deterministic scaffold)"
+    },
+    {
+      "category": "files",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/.github/workflows/ansible-ci.yml",
+      "status": "complete",
+      "description": "GitHub Actions CI workflow",
+      "notes": "Created GitHub Actions workflow for Ansible linting on pull requests"
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_app_stack/manifests/service.pp",
+      "target_path": "ansible/roles/profile_app_stack/handlers/main.yml",
+      "status": "complete",
+      "description": "Created handlers file for service restart notifications",
+      "notes": ""
+    },
+    {
+      "category": "attributes",
+      "source_path": "modules/profile_app_stack/manifests/init.pp",
+      "target_path": "ansible/roles/profile_app_stack/defaults/main.yml",
+      "status": "complete",
+      "description": "Created defaults file with all variables from Puppet manifests",
+      "notes": ""
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_app_stack",
+      "target_path": "ansible/roles/profile_app_stack/meta/main.yml",
+      "status": "complete",
+      "description": "Created meta file with role metadata",
+      "notes": ""
+    },
+    {
+      "category": "files",
+      "source_path": "modules/profile_app_stack/files/backup.sh",
+      "target_path": "ansible/roles/profile_app_stack/files/db-backup.sh",
+      "status": "complete",
+      "description": "Database backup script",
+      "notes": "Copied backup script to Ansible role files directory, updated comment to indicate Ansible management"
+    },
+    {
+      "category": "files",
+      "source_path": "modules/profile_app_stack/files/healthcheck.sh",
+      "target_path": "ansible/roles/profile_app_stack/files/healthcheck.sh",
+      "status": "complete",
+      "description": "Application health check script",
+      "notes": "Copied health check script to Ansible role files directory, updated comment to indicate Ansible management"
+    }
+  ]
+}

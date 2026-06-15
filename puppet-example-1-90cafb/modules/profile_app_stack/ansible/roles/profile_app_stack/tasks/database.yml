@@ -1,0 +1,90 @@
+---
+- name: Install PostgreSQL packages
+  ansible.builtin.package:
+    name:
+      - postgresql
+      - postgresql-contrib
+      - libpq-dev
+    state: present
+  when: db_host == 'localhost'
+- name: Ensure PostgreSQL service is running
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: true
+  when: db_host == 'localhost'
+- name: Create database user
+  ansible.builtin.command:
+    cmd: sudo -u postgres psql -c "CREATE USER {{ db_user }} WITH PASSWORD '{{ db_password }}';"
+  args:
+    creates: /tmp/.db_user_{{ db_user }}_created
+  register: db_user_created
+  when: db_host == 'localhost'
+  changed_when: db_user_created.rc == 0
+- name: Check if database user exists
+  ansible.builtin.command:
+    cmd: sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='{{ db_user }}'"
+  register: db_user_exists
+  changed_when: false
+  when: db_host == 'localhost'
+- name: Mark database user as created
+  ansible.builtin.file:
+    path: /tmp/.db_user_{{ db_user }}_created
+    state: touch
+    mode: "0600"
+  when:
+    - db_host == 'localhost'
+    - db_user_exists.stdout | trim == '1'
+- name: Create database
+  ansible.builtin.command:
+    cmd: sudo -u postgres psql -c "CREATE DATABASE {{ db_name }} OWNER {{ db_user }};"
+  args:
+    creates: /tmp/.db_{{ db_name }}_created
+  register: db_created
+  when: db_host == 'localhost'
+  changed_when: db_created.rc == 0
+- name: Check if database exists
+  ansible.builtin.command:
+    cmd: sudo -u postgres psql -tAc "SELECT 1 FROM pg_catalog.pg_database WHERE datname='{{ db_name }}'"
+  register: db_exists
+  changed_when: false
+  when: db_host == 'localhost'
+- name: Mark database as created
+  ansible.builtin.file:
+    path: /tmp/.db_{{ db_name }}_created
+    state: touch
+    mode: "0600"
+  when:
+    - db_host == 'localhost'
+    - db_exists.stdout | trim == '1'
+- name: Grant database privileges
+  ansible.builtin.command:
+    cmd: sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE {{ db_name }} TO {{ db_user }};"
+  when: db_host == 'localhost'
+  register: grant_result
+  changed_when: grant_result.rc == 0
+- name: Install cron
+  ansible.builtin.package:
+    name: cron
+    state: present
+- name: Create database backup directory
+  ansible.builtin.file:
+    path: /var/backups/postgres
+    state: directory
+    owner: root
+    group: root
+    mode: "0750"
+- name: Deploy database backup script
+  ansible.builtin.copy:
+    src: db-backup.sh
+    dest: /usr/local/bin/db-backup.sh
+    owner: root
+    group: "{{ app_group }}"
+    mode: "0750"
+- name: Setup database backup cron job
+  ansible.builtin.cron:
+    name: database_backup
+    job: /usr/local/bin/db-backup.sh {{ db_name }} {{ db_host }}
+    user: root
+    hour: 2
+    minute: 30

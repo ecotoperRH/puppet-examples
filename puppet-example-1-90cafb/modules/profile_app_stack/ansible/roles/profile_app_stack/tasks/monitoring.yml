@@ -1,0 +1,30 @@
+---
+- name: Install prometheus-node-exporter
+  ansible.builtin.package:
+    name: prometheus-node-exporter
+    state: present
+  when: ansible_env.ENVIRONMENT is defined and ansible_env.ENVIRONMENT == 'production'
+- name: Ensure prometheus-node-exporter service is running
+  ansible.builtin.service:
+    name: prometheus-node-exporter
+    state: started
+    enabled: true
+  when: ansible_env.ENVIRONMENT is defined and ansible_env.ENVIRONMENT == 'production'
+- name: Install prometheus-pushgateway
+  ansible.builtin.package:
+    name: prometheus-pushgateway
+    state: present
+  when: ansible_env.ENVIRONMENT is defined and ansible_env.ENVIRONMENT == 'production'
+- name: Setup metrics push cron job
+  ansible.builtin.cron:
+    name: push_app_metrics
+    job: /usr/local/bin/app-healthcheck.sh --push-metrics
+    user: "{{ app_user }}"
+    minute: "*/5"
+  when: ansible_env.ENVIRONMENT is defined and ansible_env.ENVIRONMENT == 'production'
+- name: Setup application health check cron job
+  ansible.builtin.cron:
+    name: app_health_check
+    job: /usr/local/bin/app-healthcheck.sh http://localhost:{{ app_port }}/health
+    user: root
+    minute: "*/2"

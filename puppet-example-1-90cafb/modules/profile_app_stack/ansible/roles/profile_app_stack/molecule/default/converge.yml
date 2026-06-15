@@ -1,0 +1,160 @@
+- name: Converge
+  hosts: all
+  gather_facts: true
+  tasks:
+  - name: Create expected directories
+    ansible.builtin.file:
+      path: '{{ item }}'
+      state: directory
+      mode: '0755'
+    loop:
+    - /tmp/molecule_test/opt/myapp-api
+    - /tmp/molecule_test/opt/myapp-api/venv/bin
+    - /tmp/molecule_test/var/log/myapp-api
+    - /tmp/molecule_test/etc/systemd/system
+    - /tmp/molecule_test/etc/logrotate.d
+    - /tmp/molecule_test/usr/local/bin
+  - name: Create Python virtual environment structure
+    ansible.builtin.file:
+      path: /tmp/molecule_test/opt/myapp-api/venv/bin/{{ item }}
+      state: touch
+      mode: '0755'
+    loop:
+    - activate
+    - python
+    - pip
+    - gunicorn
+  - name: Create application environment file
+    ansible.builtin.copy:
+      content: '# Application environment variables
+
+        # Managed by Ansible — do not edit manually
+
+
+        DATABASE_URL=postgresql://myapp_app:password@localhost:5432/myapp_db
+
+        APP_NAME=myapp-api
+
+        APP_PORT=8000
+
+        SECRET_KEY=staging-not-secret-at-all
+
+        LOG_LEVEL=debug
+
+        LOG_DIR=/var/log/myapp-api
+
+        WORKERS=1
+
+
+        DEBUG=true
+
+        ALLOWED_HOSTS=*
+
+        CORS_ORIGINS=*
+
+        '
+      dest: /tmp/molecule_test/opt/myapp-api/.env
+      mode: '0600'
+  - name: Create systemd service file
+    ansible.builtin.copy:
+      content: "# Systemd unit for myapp-api\n# Managed by Ansible — do not edit manually\n\n[Unit]\nDescription=myapp-api Application Server\nDocumentation=https://wiki.internal.example.com/apps/myapp-api\nAfter=network.target
+        postgresql.service\nWants=postgresql.service\n\n[Service]\nType=notify\nUser=myapp\nGroup=myapp\nWorkingDirectory=/opt/myapp-api\nEnvironmentFile=/opt/myapp-api/.env\n\nExecStart=/opt/myapp-api/venv/bin/gunicorn
+        \\\n    --bind 0.0.0.0:8000 \\\n    --workers 1 \\\n    --worker-class uvicorn.workers.UvicornWorker \\\n    --max-requests 100 \\\n    --max-requests-jitter
+        50 \\\n    --graceful-timeout 30 \\\n    --access-logfile /var/log/myapp-api/access.log \\\n    --error-logfile /var/log/myapp-api/error.log \\\n    --log-level
+        debug \\\n    app.main:app\n\nExecReload=/bin/kill -s HUP $MAINPID\nKillMode=mixed\nTimeoutStopSec=35\nRestart=on-failure\nRestartSec=5\nStandardOutput=append:/var/log/myapp-api/stdout.log\nStandardError=append:/var/log/myapp-api/stderr.log\n\n#
+        Security hardening\nNoNewPrivileges=true\nProtectSystem=strict\nProtectHome=true\nReadWritePaths=/opt/myapp-api /var/log/myapp-api\nPrivateTmp=true\n\n[Install]\nWantedBy=multi-user.target\n"
+      dest: /tmp/molecule_test/etc/systemd/system/myapp-api.service
+      mode: '0644'
+  - name: Create logrotate configuration
+    ansible.builtin.copy:
+      content: "/var/log/myapp-api/*.log {\n    daily\n    rotate 7\n    missingok\n    notifempty\n    compress\n    delaycompress\n    maxsize 100M\n    sharedscripts\n
+        \   postrotate\n        systemctl reload myapp-api 2>/dev/null || true\n    endscript\n}\n"
+      dest: /tmp/molecule_test/etc/logrotate.d/myapp-api
+      mode: '0644'
+  - name: Create health check script
+    ansible.builtin.copy:
+      content: "#!/bin/bash\n# Application health check script\n# Managed by Ansible — do not edit manually\n\nHEALTH_URL=\"${1:-http://localhost:8000/health}\"\n\nresponse=$(curl
+        -s -o /dev/null -w \"%{http_code}\" $HEALTH_URL)\n\nif [ \"$response\" = \"200\" ]; then\n  echo \"Health check passed: $HEALTH_URL returned $response\"\n
+        \ exit 0\nelse\n  echo \"Health check failed: $HEALTH_URL returned $response\"\n  exit 1\nfi\n"
+      dest: /tmp/molecule_test/usr/local/bin/app-healthcheck.sh
+      mode: '0755'
+  - name: Create database backup script
+    ansible.builtin.copy:
+      content: '#!/bin/bash
+
+        # Database backup script
+
+        # Managed by Ansible — do not edit manually
+
+
+        DB_NAME="${1:-myapp_db}"
+
+        DB_HOST="${2:-localhost}"
+
+        BACKUP_DIR="/var/backups/postgres"
+
+        DATE=$(date +%Y-%m-%d_%H-%M-%S)
+
+
+        mkdir -p $BACKUP_DIR
+
+
+        pg_dump -h $DB_HOST -U postgres $DB_NAME | gzip > $BACKUP_DIR/${DB_NAME}_${DATE}.sql.gz
+
+
+        # Keep only the last 7 backups
+
+        ls -t $BACKUP_DIR/${DB_NAME}_*.sql.gz | tail -n +8 | xargs rm -f
+
+        '
+      dest: /tmp/molecule_test/usr/local/bin/db-backup.sh
+      mode: '0750'
+  - name: Create application requirements file
+    ansible.builtin.copy:
+      content: 'fastapi==0.95.0
+
+        sqlalchemy==2.0.9
+
+        alembic==1.10.3
+
+        pydantic==1.10.7
+
+        python-dotenv==1.0.0
+
+        '
+      dest: /tmp/molecule_test/opt/myapp-api/requirements.txt
+      mode: '0644'
+  - name: Create alembic configuration file
+    ansible.builtin.copy:
+      content: '# Alembic configuration
+
+        # Managed by Ansible — do not edit manually
+
+
+        [alembic]
+
+        script_location = migrations
+
+        prepend_sys_path = .
+
+        version_path_separator = os
+
+        sqlalchemy.url = %(DATABASE_URL)s
+
+        '
+      dest: /tmp/molecule_test/opt/myapp-api/alembic.ini
+      mode: '0644'
+  - name: Create migrations directory
+    ansible.builtin.file:
+      path: /tmp/molecule_test/opt/myapp-api/migrations
+      state: directory
+      mode: '0755'
+  - name: Create migrations env.py file
+    ansible.builtin.copy:
+      content: "# Alembic migrations environment\n# Managed by Ansible — do not edit manually\n\nfrom alembic import context\nfrom sqlalchemy import engine_from_config,
+        pool\n\nconfig = context.config\n\ndef run_migrations_online():\n    \"\"\"Run migrations in 'online' mode.\"\"\"\n    connectable = engine_from_config(\n
+        \       config.get_section(config.config_ini_section),\n        prefix=\"sqlalchemy.\",\n        poolclass=pool.NullPool,\n    )\n    \n    with connectable.connect()
+        as connection:\n        context.configure(\n            connection=connection,\n            target_metadata=None\n        )\n        \n        with context.begin_transaction():\n
+        \           context.run_migrations()\n"
+      dest: /tmp/molecule_test/opt/myapp-api/migrations/env.py
+      mode: '0644'
