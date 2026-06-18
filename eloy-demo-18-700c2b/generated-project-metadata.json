@@ -1,0 +1,26 @@
+[
+  {
+    "name": "profile_app_stack",
+    "path": "modules/profile_app_stack",
+    "description": "Python application stack with PostgreSQL database and systemd service management.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_haproxy",
+    "path": "modules/profile_haproxy",
+    "description": "HAProxy load balancer with multi-backend support, SSL termination, and statistics interface.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_redis_cluster",
+    "path": "modules/profile_redis_cluster",
+    "description": "Redis cluster configuration with node discovery via PuppetDB.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "base_profile",
+    "path": "site/profile/manifests/base",
+    "description": "Common base configuration for all nodes including NTP, syslog, and utility packages.",
+    "technology": "Puppet"
+  }
+]
