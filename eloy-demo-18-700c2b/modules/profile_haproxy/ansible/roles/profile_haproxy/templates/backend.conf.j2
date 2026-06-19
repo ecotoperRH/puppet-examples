@@ -1,0 +1,9 @@
+# Managed by Ansible — do not edit manually
+# Backend configuration for {{ backend_name }}
+
+backend {{ backend_name }}
+    balance {{ balance | default('roundrobin') }}
+{% for server in servers %}
+    server {{ server.name }} {{ server.host }}:{{ endpoint_number }}{% if health_check is defined %} check inter {{ health_interval | default('2000ms') }}{% endif %}{% if server.backup | default(false) %} backup{% endif %}
+
+{% endfor %}

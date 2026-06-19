@@ -1,0 +1,23 @@
+---
+backends:
+  webservers:
+    balance: roundrobin
+    endpoint_number: 8080
+    health_check: true
+    health_interval: 5000ms
+    servers:
+      - name: web1
+        host: 192.168.1.101
+      - name: web2
+        host: 192.168.1.102
+      - name: web3
+        host: 192.168.1.103
+        backup: true
+  appservers:
+    balance: leastconn
+    endpoint_number: 9000
+    servers:
+      - name: app1
+        host: 192.168.1.201
+      - name: app2
+        host: 192.168.1.202

@@ -1,0 +1,22 @@
+---
+management_ip: 10.100.0.5
+public_ip: 203.0.113.10
+instance_id: 1
+instance_role: primary
+ssl_cert_path: /etc/ssl/certs/lb01.fra.example.com.pem
+ssl_key_path: /etc/ssl/private/lb01.fra.example.com.key
+prometheus_exporter_port: 9101
+prometheus_exporter_enabled: true
+backend_overrides:
+  webservers:
+    servers:
+      - name: web1-fra
+        address: 10.100.1.10
+        weight: 100
+        maxconn: 500
+        check_interval: 2000
+      - name: web2-fra
+        address: 10.100.1.11
+        weight: 100
+        maxconn: 500
+        check_interval: 2000

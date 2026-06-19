@@ -1,0 +1,19 @@
+---
+- name: Create backend configuration files
+  ansible.builtin.template:
+    src: backend.conf.j2
+    dest: "{{ config_dir }}/conf.d/{{ item.key }}.cfg"
+    owner: root
+    group: "{{ group }}"
+    mode: "0640"
+  loop: "{{ backends | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  vars:
+    backend_name: "{{ item.key }}"
+    balance: "{{ item.value.balance }}"
+    port: "{{ item.value.port | default(80) }}"
+    servers: "{{ item.value.servers }}"
+    health_check: "{{ item.value.health_check | default(omit) }}"
+    health_interval: "{{ item.value.health_interval | default(omit) }}"
+  notify: Restart HAProxy
