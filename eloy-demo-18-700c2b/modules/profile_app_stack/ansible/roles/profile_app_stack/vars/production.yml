@@ -1,0 +1,7 @@
+---
+app_revision: v2.4.1
+worker_count: 8
+max_requests: 5000
+log_level: warning
+db_host: db-primary.prod.internal
+db_port: 5432

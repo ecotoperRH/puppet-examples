@@ -1,0 +1,174 @@
+- name: Converge
+  hosts: all
+  gather_facts: true
+  tasks:
+  - name: Create expected directories
+    ansible.builtin.file:
+      path: '{{ item }}'
+      state: directory
+      mode: '0755'
+    loop:
+    - /tmp/molecule_test/opt/app_stack
+    - /tmp/molecule_test/opt/app_stack/venv
+    - /tmp/molecule_test/opt/app_stack/venv/bin
+    - /tmp/molecule_test/etc/app_stack
+    - /tmp/molecule_test/var/log/app_stack
+    - /tmp/molecule_test/etc/systemd/system
+    - /tmp/molecule_test/etc/logrotate.d
+    - /tmp/molecule_test/usr/local/bin
+    - /tmp/molecule_test/etc/prometheus/alerts
+    - /tmp/molecule_test/var/backups/postgresql
+  - name: Create expected application files
+    ansible.builtin.copy:
+      content: '# Mock application code
+
+        print("Hello from app_stack")
+
+        '
+      dest: '{{ item }}'
+      mode: '0644'
+    loop:
+    - /tmp/molecule_test/opt/app_stack/app.py
+    - /tmp/molecule_test/opt/app_stack/requirements.txt
+  - name: Create expected virtual environment files
+    ansible.builtin.copy:
+      content: '#!/bin/bash
+
+        echo "Mock Python virtual environment"
+
+        '
+      dest: '{{ item }}'
+      mode: '0755'
+    loop:
+    - /tmp/molecule_test/opt/app_stack/venv/bin/activate
+    - /tmp/molecule_test/opt/app_stack/venv/bin/python
+    - /tmp/molecule_test/opt/app_stack/venv/bin/pip
+  - name: Create expected environment file
+    ansible.builtin.copy:
+      content: 'DATABASE_URL=postgresql://app_stack:password@localhost:5432/app_stack
+
+        APP_NAME=app_stack
+
+        APP_PORT=8000
+
+        SECRET_KEY=test-secret-key
+
+        LOG_LEVEL=info
+
+        LOG_DIR=/var/log/app_stack
+
+        WORKERS=4
+
+        DEBUG=false
+
+        ALLOWED_HOSTS=*
+
+        CORS_ORIGINS=*
+
+        '
+      dest: /tmp/molecule_test/opt/app_stack/.env
+      mode: '0600'
+  - name: Create expected config file
+    ansible.builtin.copy:
+      content: '# App configuration
+
+        app_name: app_stack
+
+        port: 8000
+
+        log_level: info
+
+        workers: 4
+
+        max_requests: 1000
+
+        '
+      dest: /tmp/molecule_test/etc/app_stack/config.yml
+      mode: '0640'
+  - name: Create expected systemd service file
+    ansible.builtin.copy:
+      content: '[Unit]
+
+        Description=App Stack Service
+
+        After=network.target
+
+
+        [Service]
+
+        User=app
+
+        Group=app
+
+        WorkingDirectory=/opt/app_stack
+
+        ExecStart=/opt/app_stack/venv/bin/gunicorn app:app --bind 0.0.0.0:8000 --workers 4 --worker-class uvicorn.workers.UvicornWorker --max-requests 1000 --access-logfile
+        /var/log/app_stack/access.log --error-logfile /var/log/app_stack/error.log --log-level info
+
+        Restart=always
+
+        TimeoutStopSec=35
+
+
+        [Install]
+
+        WantedBy=multi-user.target
+
+        '
+      dest: /tmp/molecule_test/etc/systemd/system/app_stack.service
+      mode: '0644'
+  - name: Create expected logrotate config
+    ansible.builtin.copy:
+      content: "/var/log/app_stack/*.log {\n  daily\n  rotate 7\n  compress\n  delaycompress\n  missingok\n  notifempty\n  create 0640 app app\n  sharedscripts\n
+        \ postrotate\n    systemctl reload app_stack.service >/dev/null 2>&1 || true\n  endscript\n}\n"
+      dest: /tmp/molecule_test/etc/logrotate.d/app_stack
+      mode: '0644'
+  - name: Create expected health check script
+    ansible.builtin.copy:
+      content: '#!/bin/bash
+
+        # Health check script for app_stack
+
+        HOST=${1:-localhost}
+
+        PORT=${2:-8000}
+
+        ENDPOINT=${3:-/health}
+
+
+        curl -s -f http://${HOST}:${PORT}${ENDPOINT} >/dev/null
+
+        exit $?
+
+        '
+      dest: /tmp/molecule_test/usr/local/bin/app-healthcheck.sh
+      mode: '0755'
+  - name: Create expected database backup script
+    ansible.builtin.copy:
+      content: '#!/bin/bash
+
+        # Database backup script
+
+        DB_NAME=$1
+
+        DB_HOST=${2:-localhost}
+
+        BACKUP_DIR=/var/backups/postgresql
+
+
+        pg_dump -h ${DB_HOST} ${DB_NAME} > ${BACKUP_DIR}/${DB_NAME}_$(date +%Y%m%d).sql
+
+        '
+      dest: /tmp/molecule_test/usr/local/bin/db-backup.sh
+      mode: '0750'
+  - name: Create expected Prometheus alerts config
+    ansible.builtin.copy:
+      content: "groups:\n- name: app_stack_alerts\n  rules:\n  - alert: AppStackDown\n    expr: up{job=\"app_stack\"} == 0\n    for: 5m\n    labels:\n      severity:
+        critical\n    annotations:\n      summary: \"App Stack is down\"\n      description: \"App Stack has been down for more than 5 minutes.\"\n"
+      dest: /tmp/molecule_test/etc/prometheus/alerts/app_stack.yml
+      mode: '0644'
+  - name: Create migrations marker file
+    ansible.builtin.copy:
+      content: Migrations applied on {{ ansible_date_time.iso8601 }}
+      dest: /tmp/molecule_test/opt/app_stack/.migrations_applied
+      mode: '0644'

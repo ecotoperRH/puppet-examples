@@ -1,0 +1,24 @@
+---
+galaxy_info:
+  role_name: profile_app_stack
+  author: DevOps Team
+  description: Manages the application stack deployment
+  company: Example Corp
+  license: MIT
+  min_ansible_version: "2.9"
+  standalone: true
+  platforms:
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+        - all
+  galaxy_tags:
+    - application
+    - web
+    - deployment
+dependencies:
+  - role: aap_hub.database.postgres_client
+    version: 1.2.0
+  - role: aap_hub.web.nginx
+    version: 2.1.0

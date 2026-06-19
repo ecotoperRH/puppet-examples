@@ -1,0 +1,43 @@
+---
+- name: Ensure required packages are installed
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ required_packages }}"
+  tags:
+    - packages
+- name: Create application directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0755"
+  loop:
+    - "{{ app_base_dir }}"
+    - "{{ app_config_dir }}"
+    - "{{ app_data_dir }}"
+    - "{{ app_log_dir }}"
+  tags:
+    - directories
+- name: Clone application repository
+  ansible.builtin.git:
+    repo: "{{ app_repo_url }}"
+    dest: "{{ app_base_dir }}"
+    version: "{{ app_revision }}"
+    force: true
+  become: true
+  become_user: "{{ app_user }}"
+  notify: restart app service
+  tags:
+    - deploy
+- name: Install application dependencies
+  ansible.builtin.pip:
+    requirements: "{{ app_base_dir }}/requirements.txt"
+    virtualenv: "{{ app_venv_dir }}"
+    virtualenv_command: "{{ python_bin }} -m venv"
+  become: true
+  become_user: "{{ app_user }}"
+  notify: restart app service
+  tags:
+    - deploy

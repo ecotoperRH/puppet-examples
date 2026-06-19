@@ -1,0 +1,58 @@
+---
+- name: Install Python and development packages
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - "{{ python_version | default('python3') }}"
+    - "{{ python_version | default('python3') }}-pip"
+    - "{{ python_version | default('python3') }}-venv"
+    - "{{ python_version | default('python3') }}-dev"
+    - git
+    - build-essential
+  tags:
+    - packages
+    - python
+- name: Ensure application group exists
+  ansible.builtin.group:
+    name: "{{ app_group }}"
+    state: present
+    system: true
+  tags:
+    - user
+- name: Ensure application user exists
+  ansible.builtin.user:
+    name: "{{ app_user }}"
+    group: "{{ app_group }}"
+    home: "{{ app_base_dir }}"
+    shell: /bin/bash
+    system: true
+    create_home: false
+  tags:
+    - user
+- name: Ensure log directory exists
+  ansible.builtin.file:
+    path: "{{ app_log_dir }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0755"
+  tags:
+    - directories
+- name: Configure logrotate for application logs
+  ansible.builtin.template:
+    src: logrotate.j2
+    dest: /etc/logrotate.d/{{ app_name }}
+    owner: root
+    group: root
+    mode: "0644"
+  tags:
+    - logs
+- name: Install required pip packages
+  ansible.builtin.pip:
+    name: "{{ pip_packages | default([]) }}"
+    state: present
+  when: pip_packages is defined and pip_packages | length > 0
+  tags:
+    - packages
+    - python

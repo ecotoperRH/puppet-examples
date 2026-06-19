@@ -1,0 +1,5 @@
+collections:
+- name: eloy.redis
+  version: 1.0.0
+- name: community.postgresql
+  version: 2.4.0

@@ -1,0 +1,301 @@
+{
+  "module_name": "profile_app_stack",
+  "items": [
+    {
+      "category": "credentials",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/aap-configuration/controller_credential_types.yml",
+      "status": "complete",
+      "description": "AAP credential types configuration",
+      "notes": ""
+    },
+    {
+      "category": "credentials",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/aap-configuration/controller_credentials.yml",
+      "status": "complete",
+      "description": "AAP credentials configuration",
+      "notes": ""
+    },
+    {
+      "category": "credentials",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/tasks/validate_credentials.yml",
+      "status": "complete",
+      "description": "Credential validation tasks",
+      "notes": ""
+    },
+    {
+      "category": "structure",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/meta/main.yml",
+      "status": "complete",
+      "description": "Role metadata",
+      "notes": "Created meta/main.yml with Galaxy info and role dependencies"
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_app_stack/manifests/init.pp",
+      "target_path": "ansible/roles/profile_app_stack/tasks/main.yml",
+      "status": "complete",
+      "description": "Main tasks file",
+      "notes": "Converted init.pp to Ansible tasks/main.yml with proper task organization and imports. Fixed linting issues."
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_app_stack/data/common.yaml",
+      "target_path": "ansible/roles/profile_app_stack/defaults/main.yml",
+      "status": "complete",
+      "description": "Default variables",
+      "notes": "Converted common.yaml to Ansible defaults/main.yml with AAP credential variables"
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_app_stack/data/environment/production.yaml",
+      "target_path": "ansible/roles/profile_app_stack/vars/production.yml",
+      "status": "complete",
+      "description": "Environment-specific variables",
+      "notes": "Converted production.yaml to Ansible vars/production.yml with AAP credential variables"
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_app_stack/data/environment/staging.yaml",
+      "target_path": "ansible/roles/profile_app_stack/vars/staging.yml",
+      "status": "complete",
+      "description": "Environment-specific variables",
+      "notes": "Converted staging.yaml to Ansible vars/staging.yml with AAP credential variables"
+    },
+    {
+      "category": "structure",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/handlers/main.yml",
+      "status": "complete",
+      "description": "Handlers for service notifications",
+      "notes": "Created handlers/main.yml with necessary handlers for the application service"
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_app_stack/manifests/python.pp",
+      "target_path": "ansible/roles/profile_app_stack/tasks/python.yml",
+      "status": "complete",
+      "description": "Python environment setup tasks",
+      "notes": "Converted python.pp to Ansible tasks/python.yml"
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_app_stack/manifests/database.pp",
+      "target_path": "ansible/roles/profile_app_stack/tasks/database.yml",
+      "status": "complete",
+      "description": "Database setup and backup tasks",
+      "notes": "Converted database.pp to Ansible tasks/database.yml. Added community.postgresql collection to requirements.yml."
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_app_stack/manifests/app.pp",
+      "target_path": "ansible/roles/profile_app_stack/tasks/app.yml",
+      "status": "complete",
+      "description": "Application deployment tasks",
+      "notes": "Converted app.pp to Ansible tasks/app.yml"
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_app_stack/manifests/service.pp",
+      "target_path": "ansible/roles/profile_app_stack/tasks/service.yml",
+      "status": "complete",
+      "description": "Service configuration tasks",
+      "notes": "Converted service.pp to Ansible tasks/service.yml"
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_app_stack/manifests/monitoring.pp",
+      "target_path": "ansible/roles/profile_app_stack/tasks/monitoring.yml",
+      "status": "complete",
+      "description": "Monitoring integration tasks",
+      "notes": "Converted monitoring.pp to Ansible tasks/monitoring.yml"
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_app_stack/templates/app.env.erb",
+      "target_path": "ansible/roles/profile_app_stack/templates/app.env.j2",
+      "status": "complete",
+      "description": "Application environment configuration",
+      "notes": "Converted ERB template to Jinja2 format"
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_app_stack/templates/app.service.epp",
+      "target_path": "ansible/roles/profile_app_stack/templates/app.service.j2",
+      "status": "complete",
+      "description": "Systemd service unit file",
+      "notes": "Converted EPP template to Jinja2 format"
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_app_stack/templates/logrotate.conf.erb",
+      "target_path": "ansible/roles/profile_app_stack/templates/logrotate.conf.j2",
+      "status": "complete",
+      "description": "Log rotation configuration",
+      "notes": "Converted ERB template to Jinja2 format"
+    },
+    {
+      "category": "files",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/files/app-healthcheck.sh",
+      "status": "complete",
+      "description": "Application health check script",
+      "notes": "Created app-healthcheck.sh script for application health monitoring"
+    },
+    {
+      "category": "files",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/files/db-backup.sh",
+      "status": "complete",
+      "description": "Database backup script",
+      "notes": "Created db-backup.sh script for database backups"
+    },
+    {
+      "category": "dependencies",
+      "source_path": "collection:eloy.redis",
+      "target_path": "ansible/roles/profile_app_stack/requirements.yml",
+      "status": "complete",
+      "description": "Redis collection for Redis integration",
+      "notes": "Added eloy.redis collection to requirements.yml"
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/molecule/default/molecule.yml",
+      "status": "complete",
+      "description": "Molecule scenario configuration",
+      "notes": "Created by MoleculeAgent (deterministic scaffold)"
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/molecule/default/converge.yml",
+      "status": "complete",
+      "description": "Molecule converge playbook",
+      "notes": "Created converge.yml for Molecule testing that recreates the expected filesystem state under /tmp/molecule_test/ to simulate what the role would create"
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/molecule/default/verify.yml",
+      "status": "complete",
+      "description": "Molecule verification tasks",
+      "notes": "Created verify.yml for Molecule testing that validates the expected files, directories, and configurations created by the role"
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/molecule/default/create.yml",
+      "status": "complete",
+      "description": "Molecule create playbook",
+      "notes": "Created by MoleculeAgent (deterministic scaffold)"
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/molecule/default/destroy.yml",
+      "status": "complete",
+      "description": "Molecule destroy playbook",
+      "notes": "Created by MoleculeAgent (deterministic scaffold)"
+    },
+    {
+      "category": "dependencies",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/requirements.yml",
+      "status": "complete",
+      "description": "Create requirements.yml for role dependencies",
+      "notes": "Created requirements.yml with required collections"
+    },
+    {
+      "category": "structure",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/tasks/main.yml",
+      "status": "complete",
+      "description": "Create main tasks file",
+      "notes": "Created tasks/main.yml with proper task organization and imports"
+    },
+    {
+      "category": "structure",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/tasks/install.yml",
+      "status": "complete",
+      "description": "Create installation tasks file",
+      "notes": "Created tasks/install.yml with package installation and app deployment tasks"
+    },
+    {
+      "category": "structure",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/tasks/configure.yml",
+      "status": "complete",
+      "description": "Create configuration tasks file",
+      "notes": "Created tasks/configure.yml with configuration tasks for the application"
+    },
+    {
+      "category": "structure",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/tasks/service.yml",
+      "status": "complete",
+      "description": "Create service tasks file",
+      "notes": "Created tasks/service.yml with service management tasks"
+    },
+    {
+      "category": "templates",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/templates/app_config.yml.j2",
+      "status": "complete",
+      "description": "Create application configuration template",
+      "notes": "Created app_config.yml.j2 template for application configuration"
+    },
+    {
+      "category": "templates",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/templates/app_env.j2",
+      "status": "complete",
+      "description": "Create application environment template",
+      "notes": "Created app_env.j2 template for application environment variables"
+    },
+    {
+      "category": "templates",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/templates/app_service.service.j2",
+      "status": "complete",
+      "description": "Create systemd service template",
+      "notes": "Created app_service.service.j2 template for systemd service configuration"
+    },
+    {
+      "category": "templates",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/templates/nginx_site.conf.j2",
+      "status": "complete",
+      "description": "Create nginx site template",
+      "notes": "Created nginx_site.conf.j2 template for nginx site configuration"
+    },
+    {
+      "category": "templates",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/templates/logrotate.j2",
+      "status": "complete",
+      "description": "Create logrotate template",
+      "notes": "Created logrotate.j2 template for log rotation configuration"
+    },
+    {
+      "category": "attributes",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/defaults/main.yml",
+      "status": "complete",
+      "description": "Create default variables",
+      "notes": "Created defaults/main.yml with default variables for the role"
+    },
+    {
+      "category": "templates",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_app_stack/templates/prometheus_alerts.yml.j2",
+      "status": "complete",
+      "description": "Create Prometheus alerts template",
+      "notes": "Created prometheus_alerts.yml.j2 template for Prometheus monitoring alerts"
+    }
+  ]
+}

@@ -1,0 +1,145 @@
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+  - name: Check application directories exist
+    ansible.builtin.stat:
+      path: '{{ item }}'
+    register: dir_check
+    loop:
+    - /tmp/molecule_test/opt/app_stack
+    - /tmp/molecule_test/etc/app_stack
+    - /tmp/molecule_test/var/log/app_stack
+    - /tmp/molecule_test/opt/app_stack/venv
+    - /tmp/molecule_test/var/backups/postgresql
+  - name: Assert application directories exist
+    ansible.builtin.assert:
+      that:
+      - item.stat.exists
+      - item.stat.isdir
+      fail_msg: Directory {{ item.item }} does not exist or is not a directory
+      success_msg: Directory {{ item.item }} exists
+    loop: '{{ dir_check.results }}'
+  - name: Check application files exist
+    ansible.builtin.stat:
+      path: '{{ item }}'
+    register: file_check
+    loop:
+    - /tmp/molecule_test/opt/app_stack/app.py
+    - /tmp/molecule_test/opt/app_stack/.env
+    - /tmp/molecule_test/etc/app_stack/config.yml
+    - /tmp/molecule_test/etc/systemd/system/app_stack.service
+    - /tmp/molecule_test/etc/logrotate.d/app_stack
+    - /tmp/molecule_test/usr/local/bin/app-healthcheck.sh
+    - /tmp/molecule_test/usr/local/bin/db-backup.sh
+    - /tmp/molecule_test/opt/app_stack/.migrations_applied
+  - name: Assert application files exist
+    ansible.builtin.assert:
+      that:
+      - item.stat.exists
+      - item.stat.isreg
+      fail_msg: File {{ item.item }} does not exist or is not a regular file
+      success_msg: File {{ item.item }} exists
+    loop: '{{ file_check.results }}'
+  - name: Check virtual environment files exist
+    ansible.builtin.stat:
+      path: '{{ item }}'
+    register: venv_check
+    loop:
+    - /tmp/molecule_test/opt/app_stack/venv/bin/activate
+    - /tmp/molecule_test/opt/app_stack/venv/bin/python
+    - /tmp/molecule_test/opt/app_stack/venv/bin/pip
+  - name: Assert virtual environment files exist
+    ansible.builtin.assert:
+      that:
+      - item.stat.exists
+      - item.stat.isreg
+      - item.stat.executable
+      fail_msg: Virtual environment file {{ item.item }} does not exist or is not executable
+      success_msg: Virtual environment file {{ item.item }} exists and is executable
+    loop: '{{ venv_check.results }}'
+  - name: Get environment file content
+    ansible.builtin.slurp:
+      src: /tmp/molecule_test/opt/app_stack/.env
+    register: env_file
+  - name: Assert environment file contains expected variables
+    ansible.builtin.assert:
+      that:
+      - env_content is search('DATABASE_URL=')
+      - env_content is search('APP_NAME=app_stack')
+      - env_content is search('APP_PORT=8000')
+      - env_content is search('SECRET_KEY=')
+      - env_content is search('LOG_LEVEL=')
+      fail_msg: Environment file does not contain expected variables
+      success_msg: Environment file contains expected variables
+    vars:
+      env_content: '{{ env_file.content | b64decode }}'
+  - name: Get service file content
+    ansible.builtin.slurp:
+      src: /tmp/molecule_test/etc/systemd/system/app_stack.service
+    register: service_file
+  - name: Assert service file contains expected configuration
+    ansible.builtin.assert:
+      that:
+      - service_content is search('Description=App Stack Service')
+      - service_content is search('User=app')
+      - service_content is search('Group=app')
+      - service_content is search('WorkingDirectory=/opt/app_stack')
+      - service_content is search('ExecStart=')
+      - service_content is search('--bind 0.0.0.0:8000')
+      fail_msg: Service file does not contain expected configuration
+      success_msg: Service file contains expected configuration
+    vars:
+      service_content: '{{ service_file.content | b64decode }}'
+  - name: Get logrotate configuration
+    ansible.builtin.slurp:
+      src: /tmp/molecule_test/etc/logrotate.d/app_stack
+    register: logrotate_file
+  - name: Assert logrotate configuration contains expected settings
+    ansible.builtin.assert:
+      that:
+      - logrotate_content is search('/var/log/app_stack/')
+      - logrotate_content is search('rotate 7')
+      - logrotate_content is search('compress')
+      fail_msg: Logrotate configuration does not contain expected settings
+      success_msg: Logrotate configuration contains expected settings
+    vars:
+      logrotate_content: '{{ logrotate_file.content | b64decode }}'
+  - name: Check scripts are executable
+    ansible.builtin.stat:
+      path: '{{ item }}'
+    register: script_check
+    loop:
+    - /tmp/molecule_test/usr/local/bin/app-healthcheck.sh
+    - /tmp/molecule_test/usr/local/bin/db-backup.sh
+  - name: Assert scripts are executable
+    ansible.builtin.assert:
+      that:
+      - item.stat.exists
+      - item.stat.isreg
+      - item.stat.executable
+      fail_msg: Script {{ item.item }} does not exist or is not executable
+      success_msg: Script {{ item.item }} exists and is executable
+    loop: '{{ script_check.results }}'
+  - name: Check service is running
+    ansible.builtin.service_facts: null
+    tags: molecule-notest
+  - name: Assert service is active
+    ansible.builtin.assert:
+      that:
+      - '''app_stack.service'' in ansible_facts.services'
+      - ansible_facts.services['app_stack.service'].state == 'running'
+      fail_msg: Service app_stack is not running
+      success_msg: Service app_stack is running
+    tags: molecule-notest
+  - name: Check application port is listening
+    ansible.builtin.wait_for:
+      port: 8000
+      state: started
+      timeout: 5
+    tags: molecule-notest
+  - name: Check application health endpoint
+    ansible.builtin.uri:
+      url: http://localhost:8000/health
+      status_code: 200
+    tags: molecule-notest

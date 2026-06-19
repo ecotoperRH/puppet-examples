@@ -1,0 +1,40 @@
+[Unit]
+Description={{ app_name }} service
+After=network.target
+{% if db_type == 'postgresql' %}
+Requires=postgresql.service
+After=postgresql.service
+{% endif %}
+{% if use_redis | default(false) %}
+Requires=redis.service
+After=redis.service
+{% endif %}
+
+[Service]
+Type=simple
+User={{ app_user }}
+Group={{ app_group }}
+WorkingDirectory={{ app_base_dir }}
+EnvironmentFile={{ app_config_dir }}/.env
+ExecStart={{ app_venv_dir }}/bin/gunicorn \
+    --bind 0.0.0.0:{{ app_port }} \
+    --workers {{ worker_count }} \
+    --max-requests {{ max_requests }} \
+    --log-level {{ log_level }} \
+    --log-file {{ app_log_dir }}/app.log \
+    --access-logfile {{ app_log_dir }}/access.log \
+    --error-logfile {{ app_log_dir }}/error.log \
+    app:create_app()
+
+Restart=always
+RestartSec=5
+StartLimitInterval=0
+
+# Security settings
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=full
+ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target

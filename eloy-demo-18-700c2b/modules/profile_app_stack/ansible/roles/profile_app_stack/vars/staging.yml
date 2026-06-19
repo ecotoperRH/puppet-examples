@@ -1,0 +1,7 @@
+---
+app_revision: main
+worker_count: 1
+max_requests: 100
+log_level: debug
+db_host: localhost
+secret_key: "{{ secret_key | default('staging-not-secret-at-all') }}"

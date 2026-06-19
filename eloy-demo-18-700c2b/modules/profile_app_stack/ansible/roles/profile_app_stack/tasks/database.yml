@@ -1,0 +1,87 @@
+---
+- name: Install PostgreSQL packages locally
+  ansible.builtin.package:
+    name:
+      - postgresql
+      - postgresql-contrib
+      - libpq-dev
+    state: present
+  when: db_host == 'localhost'
+  tags:
+    - packages
+    - database
+- name: Ensure PostgreSQL service is running
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: true
+  when: db_host == 'localhost'
+  tags:
+    - service
+    - database
+- name: Create database user
+  community.postgresql.postgresql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    state: present
+  become: true
+  become_user: postgres
+  when: db_host == 'localhost'
+  tags:
+    - database
+- name: Create database
+  community.postgresql.postgresql_db:
+    name: "{{ db_name }}"
+    owner: "{{ db_user }}"
+    state: present
+  become: true
+  become_user: postgres
+  when: db_host == 'localhost'
+  tags:
+    - database
+- name: Grant database privileges
+  community.postgresql.postgresql_privs:
+    db: "{{ db_name }}"
+    role: "{{ db_user }}"
+    type: database
+    privs: ALL
+    state: present
+  become: true
+  become_user: postgres
+  when: db_host == 'localhost'
+  tags:
+    - database
+- name: Ensure cron is installed
+  ansible.builtin.package:
+    name: cron
+    state: present
+  tags:
+    - packages
+- name: Ensure database backup directory exists
+  ansible.builtin.file:
+    path: /var/backups/postgresql
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: "0750"
+  tags:
+    - backup
+- name: Deploy database backup script
+  ansible.builtin.copy:
+    src: db-backup.sh
+    dest: /usr/local/bin/db-backup.sh
+    owner: root
+    group: "{{ app_group }}"
+    mode: "0750"
+  tags:
+    - backup
+- name: Set up database backup cron job
+  ansible.builtin.cron:
+    name: database_backup
+    job: /usr/local/bin/db-backup.sh {{ db_name }} {{ db_host }}
+    user: root
+    hour: "2"
+    minute: "30"
+  tags:
+    - backup
+    - cron

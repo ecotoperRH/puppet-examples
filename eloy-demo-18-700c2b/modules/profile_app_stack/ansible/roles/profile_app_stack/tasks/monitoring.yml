@@ -1,0 +1,67 @@
+---
+- name: Install Prometheus Node Exporter
+  ansible.builtin.package:
+    name: prometheus-node-exporter
+    state: present
+  when: app_environment == 'production'
+  tags:
+    - monitoring
+    - packages
+- name: Ensure Prometheus Node Exporter service is running
+  ansible.builtin.service:
+    name: prometheus-node-exporter
+    state: started
+    enabled: true
+  when: app_environment == 'production'
+  tags:
+    - monitoring
+    - service
+- name: Install Prometheus Pushgateway
+  ansible.builtin.package:
+    name: prometheus-pushgateway
+    state: present
+  when: app_environment == 'production'
+  tags:
+    - monitoring
+    - packages
+- name: Set up metrics push cron job
+  ansible.builtin.cron:
+    name: push_app_metrics
+    job: /usr/local/bin/app-healthcheck.sh --push-metrics
+    user: "{{ app_user }}"
+    minute: "*/5"
+  when: app_environment == 'production' and metrics_enabled | default(false)
+  tags:
+    - monitoring
+    - cron
+- name: Set up application health check cron job
+  ansible.builtin.cron:
+    name: app_health_check
+    job: /usr/local/bin/app-healthcheck.sh -h localhost -p {{ app_port }} -e /health
+    user: root
+    minute: "*/2"
+  tags:
+    - monitoring
+    - cron
+- name: Ensure Prometheus alerts directory exists
+  ansible.builtin.file:
+    path: /etc/prometheus/alerts
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  when: app_environment == 'production' and metrics_enabled | default(false)
+  tags:
+    - monitoring
+    - config
+- name: Configure Prometheus alerts
+  ansible.builtin.template:
+    src: prometheus_alerts.yml.j2
+    dest: /etc/prometheus/alerts/{{ app_name }}.yml
+    owner: root
+    group: root
+    mode: "0644"
+  when: app_environment == 'production' and metrics_enabled | default(false)
+  tags:
+    - monitoring
+    - config

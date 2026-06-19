@@ -1,0 +1,43 @@
+---
+- name: Create application configuration file
+  ansible.builtin.template:
+    src: app_config.yml.j2
+    dest: "{{ app_config_dir }}/config.yml"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0640"
+  notify: reload app service
+  tags:
+    - config
+- name: Configure application environment file
+  ansible.builtin.template:
+    src: app_env.j2
+    dest: "{{ app_config_dir }}/.env"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0640"
+  notify: reload app service
+  tags:
+    - config
+- name: Create systemd service file
+  ansible.builtin.template:
+    src: app_service.service.j2
+    dest: /etc/systemd/system/{{ app_name }}.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - systemd daemon-reload
+    - restart app service
+  tags:
+    - service
+- name: Configure nginx site
+  ansible.builtin.include_role:
+    name: aap_hub.web.nginx
+    tasks_from: configure_site
+  vars:
+    nginx_site_name: "{{ app_name }}"
+    nginx_site_template: nginx_site.conf.j2
+    nginx_site_enabled: true
+  tags:
+    - web

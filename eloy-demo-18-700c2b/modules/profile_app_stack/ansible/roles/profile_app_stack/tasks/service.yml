@@ -1,0 +1,19 @@
+---
+- name: Deploy systemd service file
+  ansible.builtin.template:
+    src: app_service.service.j2
+    dest: /etc/systemd/system/{{ app_name }}.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload systemd daemon
+  tags:
+    - service
+    - config
+- name: Ensure application service is enabled and running
+  ansible.builtin.service:
+    name: "{{ app_name }}"
+    state: started
+    enabled: true
+  tags:
+    - service

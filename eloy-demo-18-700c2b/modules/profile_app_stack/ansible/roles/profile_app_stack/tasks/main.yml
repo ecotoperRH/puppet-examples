@@ -1,0 +1,42 @@
+---
+- name: Include OS-specific variables
+  ansible.builtin.include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version }}.yml"
+    - "{{ ansible_os_family | lower }}-{{ ansible_distribution_major_version }}.yml"
+    - "{{ ansible_distribution | lower }}.yml"
+    - "{{ ansible_os_family | lower }}.yml"
+  tags:
+    - always
+- name: Include environment-specific variables
+  ansible.builtin.include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ app_environment }}.yml"
+    - default.yml
+  tags:
+    - always
+- name: Set up Python environment
+  ansible.builtin.import_tasks: python.yml
+  tags:
+    - python
+    - install
+- name: Set up database
+  ansible.builtin.import_tasks: database.yml
+  tags:
+    - database
+    - install
+- name: Deploy application
+  ansible.builtin.import_tasks: app.yml
+  tags:
+    - app
+    - deploy
+- name: Configure application service
+  ansible.builtin.import_tasks: service.yml
+  tags:
+    - service
+    - configure
+- name: Set up monitoring
+  ansible.builtin.import_tasks: monitoring.yml
+  when: metrics_enabled | default(false)
+  tags:
+    - monitoring

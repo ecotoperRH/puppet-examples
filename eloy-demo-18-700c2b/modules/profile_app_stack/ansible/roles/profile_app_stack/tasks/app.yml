@@ -1,0 +1,131 @@
+---
+- name: Clone application repository
+  ansible.builtin.git:
+    repo: "{{ app_repo_url }}"
+    dest: "{{ app_base_dir }}"
+    version: "{{ app_revision }}"
+    update: true
+    force: true
+  become: true
+  become_user: "{{ app_user }}"
+  register: git_clone
+  tags:
+    - deploy
+- name: Ensure correct ownership of application directory
+  ansible.builtin.file:
+    path: "{{ app_base_dir }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    recurse: true
+  tags:
+    - deploy
+- name: Ensure application config directory exists
+  ansible.builtin.file:
+    path: "{{ app_config_dir }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0750"
+  tags:
+    - config
+    - directories
+- name: Create Python virtual environment
+  ansible.builtin.command:
+    cmd: "{{ python_bin }} -m venv {{ app_venv_dir }}"
+    creates: "{{ app_venv_dir }}/bin/activate"
+  become: true
+  become_user: "{{ app_user }}"
+  tags:
+    - deploy
+    - python
+- name: Install Python requirements
+  ansible.builtin.pip:
+    requirements: "{{ app_base_dir }}/requirements.txt"
+    virtualenv: "{{ app_venv_dir }}"
+    state: present
+  become: true
+  become_user: "{{ app_user }}"
+  register: pip_install
+  changed_when: pip_install.changed
+  notify: Restart application service
+  tags:
+    - deploy
+    - python
+- name: Install extra pip packages
+  ansible.builtin.pip:
+    name: "{{ pip_packages }}"
+    virtualenv: "{{ app_venv_dir }}"
+    state: present
+  become: true
+  become_user: "{{ app_user }}"
+  when: pip_packages is defined and pip_packages | length > 0
+  tags:
+    - deploy
+    - python
+- name: Create application environment file
+  ansible.builtin.template:
+    src: app_env.j2
+    dest: "{{ app_base_dir }}/.env"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0600"
+  notify: Restart application service
+  tags:
+    - config
+- name: Deploy application configuration
+  ansible.builtin.template:
+    src: app_config.yml.j2
+    dest: "{{ app_config_dir }}/config.yml"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0640"
+  notify: Restart application service
+  tags:
+    - config
+- name: Deploy health check script
+  ansible.builtin.copy:
+    src: app-healthcheck.sh
+    dest: /usr/local/bin/app-healthcheck.sh
+    owner: root
+    group: root
+    mode: "0755"
+  tags:
+    - monitoring
+- name: Check if migrations need to be run
+  ansible.builtin.stat:
+    path: "{{ app_base_dir }}/.migrations_applied"
+  register: migrations_check
+  tags:
+    - deploy
+    - database
+- name: Run database migrations
+  ansible.builtin.command:
+    cmd: "{{ app_venv_dir }}/bin/python -m alembic upgrade head"
+    chdir: "{{ app_base_dir }}"
+  become: true
+  become_user: "{{ app_user }}"
+  environment:
+    DATABASE_URL: "{{ db_type }}://{{ db_user }}:{{ db_password }}@{{ db_host }}:{{ db_port }}/{{ db_name }}"
+  register: db_migrations
+  changed_when: db_migrations.rc == 0
+  failed_when: db_migrations.rc != 0 and 'ERROR' in db_migrations.stderr
+  when:
+    - git_clone.changed
+    - lookup('ansible.builtin.file', app_base_dir + '/alembic.ini', errors='ignore') is defined
+    - lookup('ansible.builtin.file', app_base_dir + '/migrations/env.py', errors='ignore') is defined
+    - not migrations_check.stat.exists
+  tags:
+    - deploy
+    - database
+- name: Mark migrations as applied
+  ansible.builtin.file:
+    path: "{{ app_base_dir }}/.migrations_applied"
+    state: touch
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0644"
+  when: db_migrations is changed
+  tags:
+    - deploy
+    - database
