@@ -1,0 +1,10 @@
+---
+- name: Get Redis nodes from inventory
+  ansible.builtin.set_fact:
+    redis_nodes: "{{ groups['redis_servers'] | default([]) }}"
+  when: groups['redis_servers'] is defined
+- name: Set Redis nodes to current host if no group defined
+  ansible.builtin.set_fact:
+    redis_nodes:
+      - "{{ ansible_hostname }}"
+  when: groups['redis_servers'] is not defined or groups['redis_servers'] | length == 0

@@ -1,0 +1,7 @@
+---
+- name: Run profile_redis_cluster
+  hosts: all
+
+
+  roles:
+    - profile_redis_cluster

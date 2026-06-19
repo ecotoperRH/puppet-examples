@@ -1,0 +1,6 @@
+---
+- name: Restart Redis
+  ansible.builtin.service:
+    name: redis-server
+    state: restarted
+  when: ansible_facts.services is defined and 'redis-server.service' in ansible_facts.services
