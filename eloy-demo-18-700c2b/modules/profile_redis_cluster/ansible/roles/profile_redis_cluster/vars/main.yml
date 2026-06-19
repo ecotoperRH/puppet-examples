@@ -1,0 +1,10 @@
+---
+# Variables for Redis cluster configuration
+# These would typically be environment-specific values that override defaults
+# In the original Puppet code, these were defined in data/environment/production.yaml and staging.yaml
+
+# Production environment values (commented out as examples)
+# production_maxmemory_mb: 4096
+
+# Staging environment values (commented out as examples)
+# staging_maxmemory_mb: 1024

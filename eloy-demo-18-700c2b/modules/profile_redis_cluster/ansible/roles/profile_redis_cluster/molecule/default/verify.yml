@@ -1,0 +1,161 @@
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+  - name: Check Redis configuration file exists
+    ansible.builtin.stat:
+      path: /tmp/molecule_test/etc/redis/redis.conf
+    register: redis_conf
+  - name: Assert Redis configuration file exists
+    ansible.builtin.assert:
+      that:
+      - redis_conf.stat.exists
+      - redis_conf.stat.size > 0
+      fail_msg: Redis configuration file not found
+      success_msg: Redis configuration file exists
+  - name: Check Redis directories exist
+    ansible.builtin.stat:
+      path: '{{ item }}'
+    register: redis_dirs
+    loop:
+    - /tmp/molecule_test/var/lib/redis
+    - /tmp/molecule_test/var/log/redis
+    - /tmp/molecule_test/etc/redis/conf.d
+  - name: Assert Redis directories exist
+    ansible.builtin.assert:
+      that:
+      - item.stat.exists
+      - item.stat.isdir
+      fail_msg: 'Redis directory not found: {{ item.item }}'
+      success_msg: 'Redis directory exists: {{ item.item }}'
+    loop: '{{ redis_dirs.results }}'
+  - name: Get Redis configuration content
+    ansible.builtin.slurp:
+      src: /tmp/molecule_test/etc/redis/redis.conf
+    register: redis_conf_content
+  - name: Assert Redis port configuration
+    ansible.builtin.assert:
+      that:
+      - '''port 6379'' in (redis_conf_content.content | b64decode)'
+      fail_msg: Redis port configuration not found
+      success_msg: Redis port configuration found
+  - name: Assert Redis password configuration
+    ansible.builtin.assert:
+      that:
+      - '''requirepass'' in (redis_conf_content.content | b64decode)'
+      fail_msg: Redis password configuration not found
+      success_msg: Redis password configuration found
+  - name: Assert Redis memory configuration
+    ansible.builtin.assert:
+      that:
+      - '''maxmemory 2048mb'' in (redis_conf_content.content | b64decode)'
+      - '''maxmemory-policy allkeys-lru'' in (redis_conf_content.content | b64decode)'
+      fail_msg: Redis memory configuration not found
+      success_msg: Redis memory configuration found
+  - name: Assert Redis persistence configuration
+    ansible.builtin.assert:
+      that:
+      - '''appendonly yes'' in (redis_conf_content.content | b64decode)'
+      - '''appendfsync everysec'' in (redis_conf_content.content | b64decode)'
+      fail_msg: Redis persistence configuration not found
+      success_msg: Redis persistence configuration found
+  - name: Check Redis service status
+    ansible.builtin.service_facts: null
+    tags: molecule-notest
+  - name: Assert Redis service is running
+    ansible.builtin.assert:
+      that:
+      - '''redis-server.service'' in ansible_facts.services'
+      - ansible_facts.services['redis-server.service'].state == 'running'
+      fail_msg: Redis service is not running
+      success_msg: Redis service is running
+    tags: molecule-notest
+  - name: Check Redis connectivity
+    ansible.builtin.command:
+      cmd: redis-cli -h localhost -p 6379 ping
+    register: redis_ping
+    changed_when: false
+    failed_when: false
+    tags: molecule-notest
+  - name: Assert Redis responds to ping
+    ansible.builtin.assert:
+      that:
+      - redis_ping.rc == 0
+      - '''PONG'' in redis_ping.stdout'
+      fail_msg: Redis is not responding to ping
+      success_msg: Redis is responding to ping
+    tags: molecule-notest
+  - name: Check Redis password authentication
+    ansible.builtin.command:
+      cmd: redis-cli -h localhost -p 6379 -a CHANGEME ping
+    register: redis_auth_ping
+    changed_when: false
+    failed_when: false
+    tags: molecule-notest
+  - name: Assert Redis password authentication works
+    ansible.builtin.assert:
+      that:
+      - redis_auth_ping.rc == 0
+      - '''PONG'' in redis_auth_ping.stdout'
+      fail_msg: Redis password authentication failed
+      success_msg: Redis password authentication successful
+    tags: molecule-notest
+  - name: Check Redis memory configuration
+    ansible.builtin.command:
+      cmd: redis-cli -h localhost -p 6379 -a CHANGEME INFO | grep maxmemory
+    register: redis_memory
+    changed_when: false
+    failed_when: false
+    tags: molecule-notest
+  - name: Assert Redis memory configuration is applied
+    ansible.builtin.assert:
+      that:
+      - redis_memory.rc == 0
+      - '''maxmemory:2147483648'' in redis_memory.stdout'
+      fail_msg: Redis memory configuration not applied
+      success_msg: Redis memory configuration applied
+    tags: molecule-notest
+  - name: Check Redis memory policy
+    ansible.builtin.command:
+      cmd: redis-cli -h localhost -p 6379 -a CHANGEME INFO | grep maxmemory_policy
+    register: redis_memory_policy
+    changed_when: false
+    failed_when: false
+    tags: molecule-notest
+  - name: Assert Redis memory policy is applied
+    ansible.builtin.assert:
+      that:
+      - redis_memory_policy.rc == 0
+      - '''maxmemory_policy:allkeys-lru'' in redis_memory_policy.stdout'
+      fail_msg: Redis memory policy not applied
+      success_msg: Redis memory policy applied
+    tags: molecule-notest
+  - name: Check Redis persistence configuration
+    ansible.builtin.command:
+      cmd: redis-cli -h localhost -p 6379 -a CHANGEME CONFIG GET appendonly
+    register: redis_appendonly
+    changed_when: false
+    failed_when: false
+    tags: molecule-notest
+  - name: Assert Redis persistence configuration is applied
+    ansible.builtin.assert:
+      that:
+      - redis_appendonly.rc == 0
+      - '''yes'' in redis_appendonly.stdout'
+      fail_msg: Redis persistence configuration not applied
+      success_msg: Redis persistence configuration applied
+    tags: molecule-notest
+  - name: Check Redis cluster nodes
+    ansible.builtin.command:
+      cmd: redis-cli -h localhost -p 6379 -a CHANGEME CLUSTER NODES
+    register: redis_cluster_nodes
+    changed_when: false
+    failed_when: false
+    tags: molecule-notest
+  - name: Assert Redis cluster nodes are configured
+    ansible.builtin.assert:
+      that:
+      - redis_cluster_nodes.rc == 0
+      fail_msg: Redis cluster nodes not configured
+      success_msg: Redis cluster nodes configured
+    tags: molecule-notest

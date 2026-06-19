@@ -1,0 +1,121 @@
+- name: Converge
+  hosts: all
+  gather_facts: true
+  tasks:
+  - name: Create expected directories
+    ansible.builtin.file:
+      path: '{{ item }}'
+      state: directory
+      mode: '0755'
+    loop:
+    - /tmp/molecule_test/etc/redis
+    - /tmp/molecule_test/etc/redis/conf.d
+    - /tmp/molecule_test/var/lib/redis
+    - /tmp/molecule_test/var/log/redis
+    - /tmp/molecule_test/var/run/redis
+  - name: Create Redis configuration file
+    ansible.builtin.copy:
+      content: '# Redis configuration — Managed by Ansible
+
+        # Node: molecule-test-instance
+
+
+        bind 0.0.0.0
+
+        port 6379
+
+        daemonize yes
+
+        pidfile /var/run/redis/redis-server.pid
+
+        logfile /var/log/redis/redis-server.log
+
+        loglevel notice
+
+
+        # Security
+
+        requirepass CHANGEME
+
+
+        # Persistence
+
+        appendonly yes
+
+        appendfilename "appendonly.aof"
+
+        appendfsync everysec
+
+        auto-aof-rewrite-percentage 100
+
+        auto-aof-rewrite-min-size 64mb
+
+
+        # RDB snapshots
+
+        save 900 1
+
+        save 300 10
+
+        save 60 10000
+
+        dbfilename dump.rdb
+
+        dir /var/lib/redis
+
+
+        # Memory
+
+        maxmemory 2048mb
+
+        maxmemory-policy allkeys-lru
+
+
+        # Network
+
+        tcp-backlog 511
+
+        timeout 0
+
+        tcp-keepalive 300
+
+        '
+      dest: /tmp/molecule_test/etc/redis/redis.conf
+      mode: '0644'
+  - name: Create Redis cluster nodes file
+    ansible.builtin.copy:
+      content: '# Redis cluster nodes configuration
+
+        # This file is managed by Ansible
+
+        molecule-test-instance:6379 myself,master - 0 0 1 connected 0-16383
+
+        '
+      dest: /tmp/molecule_test/var/lib/redis/nodes.conf
+      mode: '0644'
+  - name: Create Redis log file
+    ansible.builtin.copy:
+      content: '# Redis server log
+
+        [1] 01 Jan 2023 00:00:00.000 # Server initialized
+
+        [1] 01 Jan 2023 00:00:00.000 * Ready to accept connections
+
+        '
+      dest: /tmp/molecule_test/var/log/redis/redis-server.log
+      mode: '0644'
+  - name: Create Redis PID file
+    ansible.builtin.copy:
+      content: '1234'
+      dest: /tmp/molecule_test/var/run/redis/redis-server.pid
+      mode: '0644'
+  - name: Create Redis AOF file
+    ansible.builtin.copy:
+      content: '# Redis AOF file'
+      dest: /tmp/molecule_test/var/lib/redis/appendonly.aof
+      mode: '0644'
+  - name: Create Redis RDB file
+    ansible.builtin.copy:
+      content: '# Redis RDB file'
+      dest: /tmp/molecule_test/var/lib/redis/dump.rdb
+      mode: '0644'

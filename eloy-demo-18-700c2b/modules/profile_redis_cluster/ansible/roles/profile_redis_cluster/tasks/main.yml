@@ -1,0 +1,9 @@
+---
+- name: Gather service facts
+  ansible.builtin.service_facts:
+- name: Validate credential variables
+  ansible.builtin.include_tasks: validate_credentials.yml
+- name: Include init tasks
+  ansible.builtin.include_tasks: init.yml
+- name: Include install tasks
+  ansible.builtin.include_tasks: install.yml

@@ -1,0 +1,5 @@
+---
+redis_port: 6379
+redis_password: CHANGEME
+maxmemory_mb: 2048
+maxmemory_policy: allkeys-lru
