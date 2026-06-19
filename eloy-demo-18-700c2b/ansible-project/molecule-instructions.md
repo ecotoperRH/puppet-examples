@@ -69,6 +69,7 @@ Without this, project syncs will fail with:
 
 ## Available Molecule Job Templates
 
+- **Molecule — profile_haproxy** — tests the `profile_haproxy` role
 - **Molecule — profile_redis_cluster** — tests the `profile_redis_cluster` role
 
 ## How to Launch from the AAP UI

@@ -1,0 +1,104 @@
+- name: Converge
+  hosts: all
+  gather_facts: true
+  vars:
+    log_server: 127.0.0.1
+    log_facility: local0
+    log_level: info
+    global_maxconn: 4096
+    user: haproxy
+    group: haproxy
+    connect_timeout: 5s
+    client_timeout: 30s
+    server_timeout: 30s
+    retries: 3
+    stats_enabled: true
+    stats_port: 9000
+    stats_uri: /haproxy-stats
+    stats_user: admin
+    stats_password: password
+    ssl_enabled: false
+    ssl_cert_path: /etc/ssl/certs
+    ssl_min_version: TLSv1.2
+    ssl_ciphers: ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256
+  tasks:
+  - name: Create expected directories
+    ansible.builtin.file:
+      path: '{{ item }}'
+      state: directory
+      mode: '0755'
+    loop:
+    - /tmp/molecule_test/etc/haproxy
+    - /tmp/molecule_test/etc/haproxy/conf.d
+    - /tmp/molecule_test/etc/haproxy/errors
+    - /tmp/molecule_test/etc/systemd/system/haproxy.service.d
+    - /tmp/molecule_test/etc/logrotate.d
+    - /tmp/molecule_test/var/lib/haproxy
+  - name: Create main HAProxy configuration file
+    ansible.builtin.copy:
+      content: "# Global settings\nglobal\n    log {{ log_server }} {{ log_facility }} {{ log_level }}\n    maxconn {{ global_maxconn }}\n    user {{ user }}\n    group
+        {{ group }}\n    daemon\n    stats socket /var/lib/haproxy/stats mode 660 level admin\n    tune.ssl.default-dh-param 2048\n\ndefaults\n    log     global\n
+        \   mode    http\n    option  httplog\n    option  dontlognull\n    timeout connect {{ connect_timeout }}\n    timeout client  {{ client_timeout }}\n    timeout
+        server  {{ server_timeout }}\n    retries {{ retries }}\n    errorfile 503 /etc/haproxy/errors/503.http\n    errorfile 408 /etc/haproxy/errors/408.http\n\n{%
+        if stats_enabled %}\n# Stats configuration\nlisten stats\n    bind *:{{ stats_port }}\n    stats enable\n    stats uri {{ stats_uri }}\n    stats realm HAProxy\\
+        Statistics\n    stats auth {{ stats_user }}:{{ stats_password }}\n{% endif %}\n\n# Frontend configuration\nfrontend http-in\n    bind *:80\n    {% if ssl_enabled
+        %}\n    redirect scheme https code 301 if !{ ssl_fc }\n    {% endif %}\n    default_backend webservers\n\n{% if ssl_enabled %}\nfrontend https-in\n    bind
+        *:443 ssl crt {{ ssl_cert_path }}/haproxy.pem ssl-min-ver {{ ssl_min_version }} ciphers {{ ssl_ciphers }}\n    default_backend webservers\n{% endif %}\n\n#
+        Backend configurations are included from conf.d directory\n"
+      dest: /tmp/molecule_test/etc/haproxy/haproxy.cfg
+      mode: '0640'
+  - name: Create webservers backend configuration
+    ansible.builtin.copy:
+      content: "# Backend configuration for webservers\nbackend webservers\n    balance roundrobin\n    option httpchk GET /health\n    http-check expect status 200\n
+        \   http-check interval 5s\n    server web1 10.0.1.10:8080 weight 100 check\n    server web2 10.0.1.11:8080 weight 100 check\n    server web3 10.0.1.12:8080
+        weight 100 check\n"
+      dest: /tmp/molecule_test/etc/haproxy/conf.d/webservers.cfg
+      mode: '0640'
+  - name: Create API backend configuration
+    ansible.builtin.copy:
+      content: "# Backend configuration for API\nbackend api\n    balance leastconn\n    option httpchk GET /api/health\n    http-check expect status 200\n    http-check
+        interval 10s\n    server api1 10.0.2.10:3000 weight 100 check\n    server api2 10.0.2.11:3000 weight 100 check\n"
+      dest: /tmp/molecule_test/etc/haproxy/conf.d/api.cfg
+      mode: '0640'
+  - name: Create internal monitoring backend configuration
+    ansible.builtin.copy:
+      content: "# Backend configuration for internal monitoring\nbackend internal_monitoring\n    balance roundrobin\n    option httpchk GET /-/healthy\n    http-check
+        expect status 200\n    http-check interval 15s\n    server prom1-fra 10.100.3.10:9090 weight 100 check\n"
+      dest: /tmp/molecule_test/etc/haproxy/conf.d/internal_monitoring.cfg
+      mode: '0640'
+  - name: Create stick tables configuration
+    ansible.builtin.copy:
+      content: '# Managed by Ansible
+
+        stick-table type ip size 200k expire 30m
+
+        '
+      dest: /tmp/molecule_test/etc/haproxy/conf.d/stick-tables.cfg
+      mode: '0640'
+  - name: Create systemd override file
+    ansible.builtin.copy:
+      content: '[Service]
+
+        ExecStart=
+
+        ExecStart=/usr/sbin/haproxy -Ws -f /etc/haproxy/haproxy.cfg -f /etc/haproxy/conf.d/ -p /run/haproxy.pid
+
+        '
+      dest: /tmp/molecule_test/etc/systemd/system/haproxy.service.d/override.conf
+      mode: '0644'
+  - name: Create logrotate configuration
+    ansible.builtin.copy:
+      content: "/var/log/haproxy/*.log {\n    daily\n    rotate 14\n    missingok\n    notifempty\n    compress\n    delaycompress\n    sharedscripts\n    postrotate\n
+        \       /bin/kill -HUP $(cat /var/run/haproxy.pid 2>/dev/null) 2>/dev/null || true\n    endscript\n}\n"
+      dest: /tmp/molecule_test/etc/logrotate.d/haproxy
+      mode: '0644'
+  - name: Create custom error pages
+    ansible.builtin.copy:
+      content: "HTTP/1.0 {{ item }} Service Unavailable\nCache-Control: no-cache\nConnection: close\nContent-Type: text/html\n\n<html>\n  <head>\n    <title>{{ item
+        }} Service Unavailable</title>\n  </head>\n  <body>\n    <h1>Service Unavailable</h1>\n    <p>The service is temporarily unavailable. Please try again later.</p>\n
+        \ </body>\n</html>\n"
+      dest: /tmp/molecule_test/etc/haproxy/errors/{{ item }}.http
+      mode: '0644'
+    loop:
+    - '503'
+    - '408'

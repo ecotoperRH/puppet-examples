@@ -1,0 +1,10 @@
+#!/bin/bash
+# Custom fact to determine HAProxy version
+# This will be placed in /etc/ansible/facts.d/ by the role
+
+if command -v haproxy >/dev/null 2>&1; then
+  VERSION=$(haproxy -v | head -n1 | awk '{print $3}')
+  echo "{\"haproxy_version\": \"$VERSION\"}"
+else
+  echo "{\"haproxy_version\": \"not_installed\"}"
+fi

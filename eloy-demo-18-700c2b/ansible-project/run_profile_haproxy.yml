@@ -1,0 +1,7 @@
+---
+- name: Run profile_haproxy
+  hosts: all
+
+
+  roles:
+    - profile_haproxy

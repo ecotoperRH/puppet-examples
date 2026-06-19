@@ -1,0 +1,73 @@
+---
+- name: Install UFW package
+  ansible.builtin.package:
+    name: ufw
+    state: present
+  when: firewall_provider == 'ufw'
+- name: Allow HTTP traffic (port 80)
+  ansible.builtin.command: ufw allow 80/tcp
+  register: ufw_http
+  changed_when: "'Rule added' in ufw_http.stdout or 'Rule updated' in ufw_http.stdout"
+  failed_when: ufw_http.rc != 0 and "already exists" not in ufw_http.stderr
+  when: firewall_provider == 'ufw'
+  args:
+    creates: /tmp/.ufw_http_added
+- name: Mark HTTP rule as added
+  ansible.builtin.file:
+    path: /tmp/.ufw_http_added
+    state: touch
+    mode: "0644"
+  when:
+    - firewall_provider == 'ufw'
+    - ufw_http is changed
+- name: Allow HTTPS traffic (port 443)
+  ansible.builtin.command: ufw allow 443/tcp
+  register: ufw_https
+  changed_when: "'Rule added' in ufw_https.stdout or 'Rule updated' in ufw_https.stdout"
+  failed_when: ufw_https.rc != 0 and "already exists" not in ufw_https.stderr
+  when: firewall_provider == 'ufw'
+  args:
+    creates: /tmp/.ufw_https_added
+- name: Mark HTTPS rule as added
+  ansible.builtin.file:
+    path: /tmp/.ufw_https_added
+    state: touch
+    mode: "0644"
+  when:
+    - firewall_provider == 'ufw'
+    - ufw_https is changed
+- name: Allow stats traffic
+  ansible.builtin.command: ufw allow {{ stats_port }}/tcp
+  register: ufw_stats
+  changed_when: "'Rule added' in ufw_stats.stdout or 'Rule updated' in ufw_stats.stdout"
+  failed_when: ufw_stats.rc != 0 and "already exists" not in ufw_stats.stderr
+  when:
+    - firewall_provider == 'ufw'
+    - stats_enabled | bool
+  args:
+    creates: /tmp/.ufw_stats_added
+- name: Mark stats rule as added
+  ansible.builtin.file:
+    path: /tmp/.ufw_stats_added
+    state: touch
+    mode: "0644"
+  when:
+    - firewall_provider == 'ufw'
+    - stats_enabled | bool
+    - ufw_stats is changed
+- name: Enable UFW
+  ansible.builtin.command: ufw --force enable
+  register: ufw_enable
+  changed_when: "'Firewall is active and enabled' in ufw_enable.stdout"
+  failed_when: ufw_enable.rc != 0
+  when: firewall_provider == 'ufw'
+  args:
+    creates: /tmp/.ufw_enabled
+- name: Mark UFW as enabled
+  ansible.builtin.file:
+    path: /tmp/.ufw_enabled
+    state: touch
+    mode: "0644"
+  when:
+    - firewall_provider == 'ufw'
+    - ufw_enable is changed

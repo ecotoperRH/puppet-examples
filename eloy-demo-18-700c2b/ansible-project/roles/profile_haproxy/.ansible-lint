@@ -1,0 +1,4 @@
+---
+# .ansible-lint configuration for profile_haproxy role
+skip_list:
+  - var-naming # Skip variable naming checks

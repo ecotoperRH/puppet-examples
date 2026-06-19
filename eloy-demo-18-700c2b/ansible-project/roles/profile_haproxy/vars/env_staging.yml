@@ -1,0 +1,6 @@
+---
+global_maxconn: 2048
+ssl_enabled: false
+log_level: debug
+stats_enabled: true
+stick_table_enabled: false
