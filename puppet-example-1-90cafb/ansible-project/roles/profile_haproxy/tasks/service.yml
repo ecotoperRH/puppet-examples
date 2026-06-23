@@ -1,0 +1,28 @@
+---
+- name: Create systemd override directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/haproxy.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+- name: Create systemd override file
+  ansible.builtin.template:
+    src: haproxy-override.conf.j2
+    dest: /etc/systemd/system/haproxy.service.d/override.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload systemd daemon
+- name: Configure logrotate for HAProxy
+  ansible.builtin.template:
+    src: haproxy-logrotate.j2
+    dest: /etc/logrotate.d/haproxy
+    owner: root
+    group: root
+    mode: "0644"
+- name: Enable and start HAProxy service
+  ansible.builtin.service:
+    name: "{{ haproxy_service_name }}"
+    state: started
+    enabled: true

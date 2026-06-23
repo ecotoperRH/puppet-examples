@@ -1,0 +1,12 @@
+# HAProxy main configuration file
+# Managed by Ansible — do not edit manually
+
+{% include 'haproxy.global.j2' %}
+
+{% include 'haproxy.defaults.j2' %}
+
+{% include 'haproxy.listen.j2' %}
+
+{% include 'haproxy.frontend.j2' %}
+
+# Backend configurations are in conf.d directory

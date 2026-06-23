@@ -1,0 +1,28 @@
+---
+galaxy_info:
+  role_name: profile_haproxy
+  author: Ansible Migration Team
+  description: HAProxy load balancer configuration
+  company: Your Company
+  license: MIT
+  min_ansible_version: "2.9"
+  standalone: true
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+    - name: Debian
+      versions:
+        - bullseye
+        - bookworm
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+  galaxy_tags:
+    - haproxy
+    - loadbalancer
+    - web
+    - networking
+dependencies: []

@@ -1,0 +1,10 @@
+---
+global_maxconn: 16384
+ssl_enabled: true
+log_level: warning
+client_timeout: 60s
+server_timeout: 60s
+stats_enabled: false
+stick_table_enabled: true
+stick_table_size: 200k
+stick_table_expire: 30m

@@ -1,0 +1,41 @@
+---
+- name: Install UFW package
+  ansible.builtin.package:
+    name: ufw
+    state: present
+  when: haproxy_firewall_provider == 'ufw'
+- name: Check UFW status
+  ansible.builtin.command: ufw status
+  register: ufw_status
+  changed_when: false
+  when: haproxy_firewall_provider == 'ufw'
+- name: Allow HTTP traffic (port 80)
+  ansible.builtin.command: ufw allow 80/tcp
+  register: ufw_http_result
+  changed_when: "'added' in ufw_http_result.stdout"
+  when:
+    - haproxy_firewall_provider == 'ufw'
+    - not ufw_status.stdout is search('80/tcp\s+ALLOW')
+- name: Allow HTTPS traffic (port 443)
+  ansible.builtin.command: ufw allow 443/tcp
+  register: ufw_https_result
+  changed_when: "'added' in ufw_https_result.stdout"
+  when:
+    - haproxy_firewall_provider == 'ufw'
+    - haproxy_ssl_enabled | bool
+    - not ufw_status.stdout is search('443/tcp\s+ALLOW')
+- name: Allow HAProxy stats traffic
+  ansible.builtin.command: ufw allow {{ haproxy_stats_port }}/tcp
+  register: ufw_stats_result
+  changed_when: "'added' in ufw_stats_result.stdout"
+  when:
+    - haproxy_firewall_provider == 'ufw'
+    - haproxy_stats_enabled | bool
+    - not ufw_status.stdout is search(haproxy_stats_port ~ '/tcp\s+ALLOW')
+- name: Enable UFW
+  ansible.builtin.command: ufw --force enable
+  register: ufw_enable_result
+  changed_when: "'enabled' in ufw_enable_result.stdout"
+  when:
+    - haproxy_firewall_provider == 'ufw'
+    - "'Status: inactive' in ufw_status.stdout"

@@ -1,0 +1,45 @@
+---
+- name: Create main HAProxy configuration file
+  ansible.builtin.template:
+    src: haproxy.cfg.j2
+    dest: "{{ haproxy_config_file }}"
+    owner: root
+    group: "{{ haproxy_group }}"
+    mode: "0640"
+    validate: haproxy -c -f %s
+  notify: Restart HAProxy
+- name: Create backend configuration files
+  ansible.builtin.template:
+    src: backend.conf.j2
+    dest: "{{ haproxy_config_dir }}/conf.d/{{ item.key }}.cfg"
+    owner: root
+    group: "{{ haproxy_group }}"
+    mode: "0640"
+  loop: "{{ haproxy_backends | dict2items }}"
+  notify: Restart HAProxy
+- name: Create errors directory
+  ansible.builtin.file:
+    path: "{{ haproxy_config_dir }}/errors"
+    state: directory
+    owner: root
+    group: "{{ haproxy_group }}"
+    mode: "0755"
+- name: Deploy custom error pages
+  ansible.builtin.copy:
+    src: errors/{{ item }}.http
+    dest: "{{ haproxy_config_dir }}/errors/{{ item }}.http"
+    owner: root
+    group: "{{ haproxy_group }}"
+    mode: "0644"
+  loop:
+    - "503"
+    - "408"
+- name: Configure stick tables
+  ansible.builtin.template:
+    src: stick-tables.cfg.j2
+    dest: "{{ haproxy_config_dir }}/conf.d/stick-tables.cfg"
+    owner: root
+    group: "{{ haproxy_group }}"
+    mode: "0640"
+  when: haproxy_stick_table_enabled | bool
+  notify: Restart HAProxy

@@ -1,0 +1,40 @@
+---
+- name: Install HAProxy package
+  ansible.builtin.package:
+    name: "{{ haproxy_package_name }}"
+    state: present
+- name: Install extra packages if defined
+  ansible.builtin.package:
+    name: "{{ haproxy_extra_packages }}"
+    state: present
+  when: haproxy_extra_packages | length > 0
+- name: Ensure HAProxy group exists
+  ansible.builtin.group:
+    name: "{{ haproxy_group }}"
+    system: true
+    state: present
+- name: Ensure HAProxy user exists
+  ansible.builtin.user:
+    name: "{{ haproxy_user }}"
+    group: "{{ haproxy_group }}"
+    home: /var/lib/haproxy
+    shell: /sbin/nologin
+    system: true
+    state: present
+- name: Create HAProxy configuration directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: "{{ haproxy_group }}"
+    mode: "0755"
+  loop:
+    - "{{ haproxy_config_dir }}"
+    - "{{ haproxy_config_dir }}/conf.d"
+- name: Create HAProxy socket directory
+  ansible.builtin.file:
+    path: /var/lib/haproxy
+    state: directory
+    owner: "{{ haproxy_user }}"
+    group: "{{ haproxy_group }}"
+    mode: "0750"

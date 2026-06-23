@@ -1,0 +1,10 @@
+#!/bin/bash
+# Custom fact to determine HAProxy version
+# Managed by Ansible - do not edit manually
+
+if command -v haproxy >/dev/null 2>&1; then
+  VERSION=$(haproxy -v 2>/dev/null | grep -oP 'version\s+\K\d+\.\d+\.\d+')
+  if [ -n "$VERSION" ]; then
+    echo "haproxy_version=$VERSION"
+  fi
+fi

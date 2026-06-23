@@ -1,0 +1,21 @@
+---
+- name: Include install tasks
+  ansible.builtin.import_tasks: install.yml
+  tags:
+    - haproxy
+    - haproxy_install
+- name: Include config tasks
+  ansible.builtin.import_tasks: config.yml
+  tags:
+    - haproxy
+    - haproxy_config
+- name: Include service tasks
+  ansible.builtin.import_tasks: service.yml
+  tags:
+    - haproxy
+    - haproxy_service
+- name: Include firewall tasks
+  ansible.builtin.import_tasks: firewall.yml
+  tags:
+    - haproxy
+    - haproxy_firewall

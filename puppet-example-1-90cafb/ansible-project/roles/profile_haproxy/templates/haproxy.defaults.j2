@@ -1,0 +1,16 @@
+# HAProxy defaults section
+# Managed by Ansible — do not edit manually
+
+defaults
+    log     global
+    mode    http
+    option  httplog
+    option  dontlognull
+    option  forwardfor
+    option  http-server-close
+    timeout connect {{ connect_timeout }}
+    timeout client  {{ client_timeout }}
+    timeout server  {{ server_timeout }}
+    retries {{ retries }}
+    errorfile 503 /etc/haproxy/errors/503.http
+    errorfile 408 /etc/haproxy/errors/408.http

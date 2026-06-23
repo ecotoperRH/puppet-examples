@@ -1,0 +1,6 @@
+---
+package_name: haproxy
+config_dir: /etc/haproxy
+firewall_provider: ufw
+extra_packages:
+  - hatop
