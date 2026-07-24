@@ -1,0 +1,6 @@
+---
+# Variables for profile_redis_cluster role
+# These variables are not meant to be modified by users
+
+# Empty vars file - all configuration is in defaults/main.yml
+# This file is included for role structure completeness

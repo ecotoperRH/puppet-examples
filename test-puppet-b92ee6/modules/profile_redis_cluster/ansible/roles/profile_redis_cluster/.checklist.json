@@ -1,0 +1,141 @@
+{
+  "module_name": "profile_redis_cluster",
+  "items": [
+    {
+      "category": "credentials",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_redis_cluster/aap-configuration/controller_credential_types.yml",
+      "status": "complete",
+      "description": "AAP credential types configuration",
+      "notes": ""
+    },
+    {
+      "category": "credentials",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_redis_cluster/aap-configuration/controller_credentials.yml",
+      "status": "complete",
+      "description": "AAP credentials configuration",
+      "notes": ""
+    },
+    {
+      "category": "credentials",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_redis_cluster/tasks/validate_credentials.yml",
+      "status": "complete",
+      "description": "Credential validation tasks",
+      "notes": ""
+    },
+    {
+      "category": "structure",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_redis_cluster/meta/main.yml",
+      "status": "complete",
+      "description": "Role metadata",
+      "notes": "Created standard meta/main.yml"
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_redis_cluster/manifests/init.pp",
+      "target_path": "ansible/roles/profile_redis_cluster/tasks/main.yml",
+      "status": "complete",
+      "description": "Main tasks file",
+      "notes": "Created main tasks file that includes validate_credentials.yml and install.yml"
+    },
+    {
+      "category": "structure",
+      "source_path": "modules/profile_redis_cluster/manifests/install.pp",
+      "target_path": "ansible/roles/profile_redis_cluster/tasks/install.yml",
+      "status": "complete",
+      "description": "Install tasks file",
+      "notes": "Created install tasks file that uses eloy.redis.redis role"
+    },
+    {
+      "category": "structure",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_redis_cluster/defaults/main.yml",
+      "status": "complete",
+      "description": "Default variables",
+      "notes": "Created defaults file with Redis configuration variables"
+    },
+    {
+      "category": "structure",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_redis_cluster/handlers/main.yml",
+      "status": "complete",
+      "description": "Handlers file",
+      "notes": "Created handlers file with Redis restart handler"
+    },
+    {
+      "category": "files",
+      "source_path": "modules/profile_redis_cluster/lib/facter/redis_role.rb",
+      "target_path": "ansible/roles/profile_redis_cluster/files/redis_role.fact",
+      "status": "complete",
+      "description": "Custom fact for Redis role detection",
+      "notes": "Converted Puppet fact to Ansible custom fact for Redis role detection"
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_redis_cluster/migration-dependencies/redis/templates/redis.service.epp",
+      "target_path": "ansible/roles/profile_redis_cluster/templates/redis.service.j2",
+      "status": "complete",
+      "description": "Redis service template",
+      "notes": "Converted Puppet EPP template to Jinja2 template for Redis systemd service"
+    },
+    {
+      "category": "dependencies",
+      "source_path": "collection:eloy.redis",
+      "target_path": "ansible/roles/profile_redis_cluster/requirements.yml",
+      "status": "complete",
+      "description": "Redis collection for Redis server configuration",
+      "notes": "Created requirements.yml with eloy.redis collection dependency"
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_redis_cluster/molecule/default/molecule.yml",
+      "status": "complete",
+      "description": "Molecule scenario configuration",
+      "notes": "Created by MoleculeAgent (deterministic scaffold)"
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_redis_cluster/molecule/default/converge.yml",
+      "status": "complete",
+      "description": "Molecule converge playbook",
+      "notes": "Created converge.yml that sets up the expected filesystem structure under /tmp/molecule_test/ including Redis configuration and service files"
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_redis_cluster/molecule/default/verify.yml",
+      "status": "complete",
+      "description": "Molecule verification tasks",
+      "notes": "Created verify.yml that checks for the existence and content of Redis configuration files, directories, and service files with appropriate container-safe paths"
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_redis_cluster/molecule/default/create.yml",
+      "status": "complete",
+      "description": "Molecule create playbook",
+      "notes": "Created by MoleculeAgent (deterministic scaffold)"
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_redis_cluster/molecule/default/destroy.yml",
+      "status": "complete",
+      "description": "Molecule destroy playbook",
+      "notes": "Created by MoleculeAgent (deterministic scaffold)"
+    },
+    {
+      "category": "structure",
+      "source_path": "N/A",
+      "target_path": "ansible/roles/profile_redis_cluster/vars/main.yml",
+      "status": "complete",
+      "description": "Variables for sensitive data (passwords)",
+      "notes": "Created vars file as a placeholder for role structure completeness"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+[Unit]
+Description=Redis In-Memory Data Store
+After=network.target
+
+[Service]
+Type=simple
+User={{ redis_user | default('redis') }}
+Group={{ redis_group | default('redis') }}
+ExecStart={{ redis_bin_path | default('/usr/bin/redis-server') }} {{ redis_config_dir }}/redis.conf
+Restart=always
+{% if redis_ulimit_managed | default(false) %}
+LimitNOFILE={{ redis_ulimit | default(10240) }}
+{% endif %}
+TimeoutStartSec={{ redis_service_timeout_start | default(60) }}
+TimeoutStopSec={{ redis_service_timeout_stop | default(60) }}
+
+[Install]
+WantedBy=multi-user.target

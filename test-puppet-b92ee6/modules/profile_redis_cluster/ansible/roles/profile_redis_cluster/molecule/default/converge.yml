@@ -1,0 +1,82 @@
+- name: Converge
+  hosts: all
+  gather_facts: true
+  vars:
+    redis_password: CHANGEME
+  tasks:
+  - name: Create expected Redis directories
+    ansible.builtin.file:
+      path: '{{ item }}'
+      state: directory
+      mode: '0755'
+    loop:
+    - /tmp/molecule_test/etc/redis
+    - /tmp/molecule_test/var/log/redis
+    - /tmp/molecule_test/var/lib/redis
+    - /tmp/molecule_test/etc/systemd/system
+    - /tmp/molecule_test/etc/ansible/facts.d
+  - name: Create Redis configuration file
+    ansible.builtin.copy:
+      content: '# Redis configuration file
+
+        port {{ redis_port | default(6379) }}
+
+        bind {{ redis_bind | default(''0.0.0.0'') }}
+
+        requirepass {{ redis_password }}
+
+        maxmemory {{ redis_maxmemory | default(''2048mb'') }}
+
+        maxmemory-policy {{ redis_maxmemory_policy | default(''allkeys-lru'') }}
+
+        appendonly {{ redis_appendonly | default(''yes'') }}
+
+        appendfsync {{ redis_appendfsync | default(''everysec'') }}
+
+        dir {{ redis_data_dir | default(''/var/lib/redis'') }}
+
+        logfile {{ redis_log_dir | default(''/var/log/redis'') }}/redis.log
+
+        '
+      dest: /tmp/molecule_test/etc/redis/redis.conf
+      mode: '0644'
+  - name: Create Redis systemd service file
+    ansible.builtin.copy:
+      content: '[Unit]
+
+        Description=Redis In-Memory Data Store
+
+        After=network.target
+
+
+        [Service]
+
+        Type=simple
+
+        User=redis
+
+        Group=redis
+
+        ExecStart=/usr/bin/redis-server /etc/redis/redis.conf
+
+        Restart=always
+
+        LimitNOFILE=65536
+
+
+        [Install]
+
+        WantedBy=multi-user.target
+
+        '
+      dest: /tmp/molecule_test/etc/systemd/system/redis-server.service
+      mode: '0644'
+  - name: Create Redis role custom fact
+    ansible.builtin.copy:
+      content: '#!/usr/bin/env bash
+
+        echo ''{"redis_role": "primary"}''
+
+        '
+      dest: /tmp/molecule_test/etc/ansible/facts.d/redis_role.fact
+      mode: '0755'

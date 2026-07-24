@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# Custom fact to determine if Redis is a primary or replica
+# Converted from Puppet fact redis_role
+
+CONFIG_FILE="/etc/redis/conf.d/replica.conf"
+
+if [ -f "$CONFIG_FILE" ] && grep -q "replicaof" "$CONFIG_FILE"; then
+  echo '{"redis_role": "replica"}'
+else
+  echo '{"redis_role": "primary"}'
+fi

@@ -1,0 +1,14 @@
+---
+redis_port: 6379
+redis_bind: 0.0.0.0
+redis_maxmemory_mb: 2048
+redis_maxmemory: "{{ redis_maxmemory_mb }}mb"
+redis_maxmemory_policy: allkeys-lru
+redis_config_dir: /etc/redis
+redis_log_dir: /var/log/redis
+redis_data_dir: /var/lib/redis
+redis_appendonly: true
+redis_appendfsync: everysec
+redis_service_name: redis-server
+redis_service_enabled: true
+redis_service_state: started

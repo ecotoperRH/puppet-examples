@@ -1,0 +1,28 @@
+---
+- name: Create facts.d directory
+  ansible.builtin.file:
+    path: /etc/ansible/facts.d
+    state: directory
+    mode: "0755"
+- name: Deploy Redis role custom fact
+  ansible.builtin.copy:
+    src: redis_role.fact
+    dest: /etc/ansible/facts.d/redis_role.fact
+    mode: "0755"
+- name: Configure Redis using eloy.redis collection
+  ansible.builtin.include_role:
+    name: eloy.redis.redis
+  vars:
+    redis_port: "{{ redis_port }}"
+    redis_bind: "{{ redis_bind }}"
+    redis_requirepass: "{{ redis_password }}"
+    redis_maxmemory: "{{ redis_maxmemory }}"
+    redis_maxmemory_policy: "{{ redis_maxmemory_policy }}"
+    redis_appendonly: "{{ redis_appendonly }}"
+    redis_appendfsync: "{{ redis_appendfsync }}"
+    redis_service_name: "{{ redis_service_name }}"
+    redis_service_enabled: "{{ redis_service_enabled }}"
+    redis_service_state: "{{ redis_service_state }}"
+    redis_config_dir: "{{ redis_config_dir }}"
+    redis_log_dir: "{{ redis_log_dir }}"
+    redis_data_dir: "{{ redis_data_dir }}"
