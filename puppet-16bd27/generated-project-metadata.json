@@ -1,0 +1,50 @@
+[
+  {
+    "name": "profile_haproxy",
+    "path": "modules/profile_haproxy",
+    "description": "HAProxy load-balancer profile managing package installation, frontend/backend configuration, SSL termination, health checks, stats endpoint, and OS-specific firewall rules. Supports multi-datacenter backend server lists and per-environment tuning.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_haproxy",
+    "path": "site/modules/linux/profile_haproxy",
+    "description": "Active production version of the HAProxy load-balancer profile with the same configuration logic as the modules/ copy, loaded first via environment.conf modulepath precedence. Includes cluster-, datacenter-, and node-level Hiera data for Frankfurt production environment.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_app_stack",
+    "path": "modules/profile_app_stack",
+    "description": "Full Python/Flask application stack profile covering user/group setup, virtualenv, pip packages, Git-based code deployment, PostgreSQL client libraries, Gunicorn systemd service, logrotate, and Prometheus monitoring integration.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_app_stack",
+    "path": "site/modules/linux/profile_app_stack",
+    "description": "Active production version of the Python/Flask application stack profile, loaded by site/modules/linux modulepath precedence. Identical structure to the modules/ copy with confirmed bugs tracked for pre-migration fixes.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_redis_cluster",
+    "path": "modules/profile_redis_cluster",
+    "description": "Redis cluster profile managing installation, configuration, and replication topology detection using a custom Facter fact. Queries PuppetDB for peer node IPs to dynamically build replica-of configuration.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_redis_cluster",
+    "path": "site/modules/linux/profile_redis_cluster",
+    "description": "Active production version of the Redis cluster profile, loaded by site/modules/linux modulepath precedence. Identical to the modules/ copy and supports RedHat 8/9 and Ubuntu 22.04/24.04.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "puppetdb_query_stub",
+    "path": "modules/puppetdb_query_stub",
+    "description": "Stub module providing a no-op implementation of the puppetdb_query() function used by profile_redis_cluster, returning an empty array to allow testing without a live PuppetDB instance.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "base_utils",
+    "path": "site/modules/common/base_utils",
+    "description": "Common base utilities profile providing OS-agnostic installation of baseline tooling packages (curl, vim, htop, etc.) via a Hiera-driven package list supporting both Debian and RedHat package name variants.",
+    "technology": "Puppet"
+  }
+]
