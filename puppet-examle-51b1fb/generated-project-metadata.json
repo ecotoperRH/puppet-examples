@@ -1,0 +1,50 @@
+[
+  {
+    "name": "profile_app_stack",
+    "path": "modules/profile_app_stack",
+    "description": "Full Python/FastAPI application stack orchestrator managing Python runtime, venv, Git repo cloning, pip dependencies, .env file generation, PostgreSQL provisioning, Alembic migrations, systemd service deployment, logrotate, and Prometheus monitoring resources.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_haproxy",
+    "path": "modules/profile_haproxy",
+    "description": "HAProxy load balancer profile with static Hiera-driven backend configuration. Installs HAProxy, renders haproxy.cfg from a template, manages per-backend config fragments, UFW firewall rules, SSL/TLS termination, and the HAProxy service.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_redis_cluster",
+    "path": "modules/profile_redis_cluster",
+    "description": "Redis standalone/cluster node profile that delegates to the upstream puppet-redis Forge module. Configures bind address, port, password, maxmemory, eviction policy, and AOF persistence, with PuppetDB-based peer node discovery.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "puppetdb_query_stub",
+    "path": "modules/puppetdb_query_stub",
+    "description": "Test/development stub that replaces the puppetdb_query Puppet function with a no-op returning an empty array, allowing catalog compilation without a live PuppetDB connection during local Vagrant and container-based testing.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_app_stack",
+    "path": "site/modules/linux/profile_app_stack",
+    "description": "Functionally identical to the modules/profile_app_stack copy but with expanded OS support for RedHat 8/9 and Ubuntu 22.04/24.04. Takes precedence over the modules/ copy via the modulepath ordering.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_haproxy",
+    "path": "site/modules/linux/profile_haproxy",
+    "description": "Extended version of the modules/profile_haproxy copy that adds a discover subclass using PuppetDB exported resources and puppetdb_query for dynamic HAProxy backend population. Also expands OS support to RedHat 8/9 and Debian 11/12.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_redis_cluster",
+    "path": "site/modules/linux/profile_redis_cluster",
+    "description": "Functionally identical to modules/profile_redis_cluster but with expanded OS support for RedHat 8/9 and Ubuntu 22.04/24.04. Takes precedence over the modules/ copy via the modulepath ordering.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "base_utils",
+    "path": "site/modules/common/base_utils",
+    "description": "Common base utility module included by all roles. Manages /etc/motd, installs OS-specific utility packages, and provides reusable defined types, custom types, and Puppet Bolt plans/tasks (rolling_restart plan, check_service task).",
+    "technology": "Puppet"
+  }
+]
