@@ -1,0 +1,8 @@
+profile_haproxy_package_name: haproxy
+profile_haproxy_config_dir: /etc/haproxy
+profile_haproxy_firewall_provider: firewalld
+profile_haproxy_firewall_zone: public
+profile_haproxy_extra_packages:
+- haproxy-systemd-wrapper
+- policycoreutils-python-utils
+profile_haproxy_selinux_enabled: true

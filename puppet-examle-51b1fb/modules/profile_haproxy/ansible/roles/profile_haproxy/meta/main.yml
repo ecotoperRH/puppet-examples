@@ -1,0 +1,26 @@
+---
+galaxy_info:
+  role_name: profile_haproxy
+  namespace: x2a
+  author: Platform Team
+  description: HAProxy load balancer profile with multi-backend support
+  license: Apache-2.0
+  min_ansible_version: "2.9"
+  platforms:
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+    - name: Debian
+      versions:
+        - bullseye
+        - bookworm
+  galaxy_tags:
+    - haproxy
+    - loadbalancer
+    - proxy
+    - http
+    - ssl
+    - firewall
+    - linux
+dependencies: []

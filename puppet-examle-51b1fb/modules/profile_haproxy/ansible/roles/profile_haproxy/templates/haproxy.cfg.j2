@@ -1,0 +1,54 @@
+# Managed by Ansible — do not edit manually
+# Role: profile_haproxy
+
+global
+    log         {{ profile_haproxy_log_server }} {{ profile_haproxy_log_facility }} {{ profile_haproxy_log_level }}
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     {{ profile_haproxy_global_maxconn }}
+    user        {{ profile_haproxy_user }}
+    group       {{ profile_haproxy_group }}
+    daemon
+    stats socket /var/lib/haproxy/stats mode 660 level admin
+{% if profile_haproxy_ssl_enabled %}
+    ssl-default-bind-ciphers {{ profile_haproxy_ssl_ciphers }}
+    ssl-default-bind-options no-sslv3 no-tlsv10 no-tlsv11
+    tune.ssl.default-dh-param 2048
+{% endif %}
+
+defaults
+    log     global
+    mode    http
+    option  httplog
+    option  dontlognull
+    option  forwardfor
+    option  http-server-close
+    timeout connect {{ profile_haproxy_connect_timeout }}
+    timeout client  {{ profile_haproxy_client_timeout }}
+    timeout server  {{ profile_haproxy_server_timeout }}
+    retries {{ profile_haproxy_retries }}
+    errorfile 503 {{ profile_haproxy_config_dir }}/errors/503.http
+    errorfile 408 {{ profile_haproxy_config_dir }}/errors/408.http
+
+{% if profile_haproxy_stats_enabled %}
+listen stats
+    bind *:{{ profile_haproxy_stats_port }}
+    stats enable
+    stats uri {{ profile_haproxy_stats_uri }}
+    stats realm HAProxy\ Statistics
+    stats auth {{ stats_user }}:{{ stats_password }}
+    stats admin if TRUE
+    stats refresh 30s
+{% endif %}
+
+frontend http_front
+    bind *:80
+{% if profile_haproxy_ssl_enabled %}
+    bind *:443 ssl crt {{ profile_haproxy_ssl_cert_path }}/haproxy.pem
+    http-request redirect scheme https unless { ssl_fc }
+{% endif %}
+    default_backend webservers
+
+{% for name, config in profile_haproxy_backends.items() %}
+# Backend configuration included from conf.d/{{ name }}.cfg
+{% endfor %}

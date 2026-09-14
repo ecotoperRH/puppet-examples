@@ -1,0 +1,39 @@
+---
+- name: Initialise discovered webservers list
+  ansible.builtin.set_fact:
+    profile_haproxy_discovered_webservers: []
+  when: groups['webservers'] is defined and groups['webservers'] | length > 0
+- name: Build webservers backend from inventory group (dynamic discovery)
+  ansible.builtin.set_fact:
+    profile_haproxy_discovered_webservers: "{{ profile_haproxy_discovered_webservers + [{'name': item_haproxy_ws,\n   'address': hostvars[item_haproxy_ws]['ansible_host']\n\
+      \              | default(item_haproxy_ws),\n   'weight': hostvars[item_haproxy_ws]['haproxy_weight'] | default(100)}] }}"
+  loop: "{{ groups['webservers'] | default([]) }}"
+  loop_control:
+    loop_var: item_haproxy_ws
+  when: groups['webservers'] is defined and groups['webservers'] | length > 0
+- name: Initialise discovered api servers list
+  ansible.builtin.set_fact:
+    profile_haproxy_discovered_api_servers: []
+  when: groups['app_servers'] is defined and groups['app_servers'] | length > 0
+- name: Build api backend from app_servers inventory group (dynamic discovery)
+  ansible.builtin.set_fact:
+    profile_haproxy_discovered_api_servers: "{{ profile_haproxy_discovered_api_servers + [{'name': item_haproxy_api,\n   'address': hostvars[item_haproxy_api]['ansible_host']\n\
+      \              | default(item_haproxy_api),\n   'weight': hostvars[item_haproxy_api]['haproxy_weight'] | default(100)}] }}"
+  loop: "{{ groups['app_servers'] | default([]) }}"
+  loop_control:
+    loop_var: item_haproxy_api
+  when: groups['app_servers'] is defined and groups['app_servers'] | length > 0
+- name: Merge dynamically discovered webservers into backends
+  ansible.builtin.set_fact:
+    profile_haproxy_backends: "{{ profile_haproxy_backends | combine(\n     {'webservers': profile_haproxy_backends['webservers'] | combine(\n       {'servers': profile_haproxy_discovered_webservers})},\n\
+      \     recursive=true) }}"
+  when:
+    - profile_haproxy_discovered_webservers is defined
+    - profile_haproxy_discovered_webservers | length > 0
+- name: Merge dynamically discovered api servers into backends
+  ansible.builtin.set_fact:
+    profile_haproxy_backends: "{{ profile_haproxy_backends | combine(\n     {'api': profile_haproxy_backends['api'] | combine(\n       {'servers': profile_haproxy_discovered_api_servers})},\n\
+      \     recursive=true) }}"
+  when:
+    - profile_haproxy_discovered_api_servers is defined
+    - profile_haproxy_discovered_api_servers | length > 0

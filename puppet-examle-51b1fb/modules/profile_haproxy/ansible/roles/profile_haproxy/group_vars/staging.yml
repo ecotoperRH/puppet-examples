@@ -1,0 +1,5 @@
+profile_haproxy_global_maxconn: 2048
+profile_haproxy_ssl_enabled: false
+profile_haproxy_log_level: debug
+profile_haproxy_stats_enabled: true
+profile_haproxy_stick_table_enabled: false

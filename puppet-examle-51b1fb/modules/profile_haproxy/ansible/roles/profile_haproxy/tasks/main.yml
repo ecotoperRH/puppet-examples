@@ -1,0 +1,13 @@
+---
+- name: Validate credential variables
+  ansible.builtin.include_tasks: validate_credentials.yml
+- name: Install HAProxy and dependencies
+  ansible.builtin.include_tasks: install.yml
+- name: Discover dynamic backend members
+  ansible.builtin.include_tasks: discover.yml
+- name: Configure HAProxy
+  ansible.builtin.include_tasks: config.yml
+- name: Manage HAProxy service and log rotation
+  ansible.builtin.include_tasks: service.yml
+- name: Configure firewall rules for HAProxy
+  ansible.builtin.include_tasks: firewall.yml

@@ -1,0 +1,6 @@
+profile_haproxy_package_name: haproxy
+profile_haproxy_config_dir: /etc/haproxy
+profile_haproxy_firewall_provider: ufw
+profile_haproxy_extra_packages:
+- hatop
+profile_haproxy_selinux_enabled: false

@@ -1,0 +1,48 @@
+---
+- name: Install HAProxy package
+  ansible.builtin.package:
+    name: "{{ profile_haproxy_package_name }}"
+    state: present
+- name: Install OS-specific extra packages
+  ansible.builtin.package:
+    name: "{{ profile_haproxy_extra_packages }}"
+    state: present
+  when: profile_haproxy_extra_packages | length > 0
+- name: Ensure haproxy group exists
+  ansible.builtin.group:
+    name: "{{ profile_haproxy_group }}"
+    system: true
+    state: present
+- name: Ensure haproxy user exists
+  ansible.builtin.user:
+    name: "{{ profile_haproxy_user }}"
+    group: "{{ profile_haproxy_group }}"
+    home: /var/lib/haproxy
+    shell: /sbin/nologin
+    system: true
+    state: present
+- name: Ensure HAProxy config directories exist
+  ansible.builtin.file:
+    path: "{{ item_haproxy_dir }}"
+    state: directory
+    owner: root
+    group: "{{ profile_haproxy_group }}"
+    mode: "0755"
+  loop:
+    - "{{ profile_haproxy_config_dir }}"
+    - "{{ profile_haproxy_config_dir }}/conf.d"
+  loop_control:
+    loop_var: item_haproxy_dir
+- name: Ensure HAProxy working directory exists
+  ansible.builtin.file:
+    path: /var/lib/haproxy
+    state: directory
+    owner: "{{ profile_haproxy_user }}"
+    group: "{{ profile_haproxy_group }}"
+    mode: "0750"
+- name: Set SELinux boolean to allow HAProxy to connect to any port
+  ansible.posix.seboolean:
+    name: haproxy_connect_any
+    state: true
+    persistent: true
+  when: profile_haproxy_selinux_enabled | bool

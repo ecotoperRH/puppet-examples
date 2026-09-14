@@ -1,0 +1,58 @@
+---
+profile_haproxy_package_name: haproxy
+profile_haproxy_config_dir: /etc/haproxy
+profile_haproxy_config_file: /etc/haproxy/haproxy.cfg
+profile_haproxy_service_name: haproxy
+profile_haproxy_user: haproxy
+profile_haproxy_group: haproxy
+profile_haproxy_stats_enabled: true
+profile_haproxy_stats_port: 9000
+profile_haproxy_stats_uri: /haproxy-stats
+profile_haproxy_global_maxconn: 4096
+profile_haproxy_client_timeout: 30s
+profile_haproxy_server_timeout: 30s
+profile_haproxy_connect_timeout: 5s
+profile_haproxy_retries: 3
+profile_haproxy_ssl_enabled: false
+profile_haproxy_ssl_cert_path: /etc/ssl/certs
+profile_haproxy_ssl_key_path: /etc/ssl/private
+profile_haproxy_ssl_ciphers: ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256
+profile_haproxy_ssl_min_version: TLSv1.2
+profile_haproxy_log_server: 127.0.0.1
+profile_haproxy_log_facility: local0
+profile_haproxy_log_level: info
+profile_haproxy_stick_table_enabled: false
+profile_haproxy_stick_table_size: 100k
+profile_haproxy_stick_table_expire: 10m
+profile_haproxy_extra_packages: []
+profile_haproxy_selinux_enabled: false
+profile_haproxy_firewall_provider: ufw
+profile_haproxy_firewall_zone: public
+profile_haproxy_backends:
+  webservers:
+    balance: roundrobin
+    port: 8080
+    health_check: httpchk GET /health
+    health_interval: 5s
+    servers:
+      - name: web1
+        address: 10.0.1.10
+        weight: 100
+      - name: web2
+        address: 10.0.1.11
+        weight: 100
+      - name: web3
+        address: 10.0.1.12
+        weight: 100
+  api:
+    balance: leastconn
+    port: 3000
+    health_check: httpchk GET /api/health
+    health_interval: 10s
+    servers:
+      - name: api1
+        address: 10.0.2.10
+        weight: 100
+      - name: api2
+        address: 10.0.2.11
+        weight: 100
