@@ -1,0 +1,38 @@
+[
+  {
+    "name": "profile_app_stack",
+    "path": "site/modules/linux/profile_app_stack",
+    "description": "Full Python application stack deploying a FastAPI/Gunicorn application from a Git repository onto Ubuntu. Manages Python runtime and virtualenv setup, PostgreSQL database provisioning, application deployment, systemd service unit generation, Alembic database migrations, log rotation, and Prometheus monitoring.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_haproxy",
+    "path": "site/modules/linux/profile_haproxy",
+    "description": "HAProxy 2.x load balancer profile managing installation, templated haproxy.cfg, per-backend config fragments, custom HTTP error pages, UFW firewall rules, and dynamic backend discovery via PuppetDB exported resources.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_redis_cluster",
+    "path": "site/modules/linux/profile_redis_cluster",
+    "description": "Redis server profile wrapping the puppet-redis Forge module, configuring AOF persistence, RDB snapshots, memory limits, and password authentication with PuppetDB-based cluster node discovery and a custom Facter fact for primary/replica role detection.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "base_utils",
+    "path": "site/modules/common/base_utils",
+    "description": "Cross-cutting base utilities module included by all roles, providing MOTD management, OS-conditional utility package installation, a config_entry defined type, custom types and functions, a custom Facter fact, and Bolt tasks/plans for operational automation.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_base_base",
+    "path": "site/profile/manifests/base/base.pp",
+    "description": "Thin site profile wrapper included by every role that composes base_utils with NTP (chrony) and syslog (rsyslog) management, acting as the universal baseline applied before any workload-specific profile.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "puppetdb_query_stub",
+    "path": "modules/puppetdb_query_stub",
+    "description": "Test/development stub providing a no-op implementation of the puppetdb_query() function, used during local Vagrant testing and CI to prevent catalog compilation failures when a live PuppetDB server is unavailable.",
+    "technology": "Puppet"
+  }
+]
