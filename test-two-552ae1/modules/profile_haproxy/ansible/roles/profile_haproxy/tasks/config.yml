@@ -1,0 +1,55 @@
+---
+- name: Ensure HAProxy errors directory exists
+  ansible.builtin.file:
+    path: "{{ haproxy_config_dir }}/errors"
+    state: directory
+    owner: root
+    group: "{{ haproxy_group }}"
+    mode: "0755"
+- name: Deploy HAProxy main configuration
+  ansible.builtin.template:
+    src: haproxy.cfg.j2
+    dest: "{{ haproxy_config_file }}"
+    owner: root
+    group: "{{ haproxy_group }}"
+    mode: "0640"
+    backup: true
+  notify: Restart haproxy
+- name: Deploy per-backend configuration fragments
+  ansible.builtin.template:
+    src: backend.conf.j2
+    dest: "{{ haproxy_config_dir }}/conf.d/{{ item_haproxy_backend['key'] }}.cfg"
+    owner: root
+    group: "{{ haproxy_group }}"
+    mode: "0640"
+    backup: true
+  vars:
+    backend_name: "{{ item_haproxy_backend['key'] }}"
+    backend_config: "{{ item_haproxy_backend['value'] }}"
+  loop: "{{ haproxy_backends | dict2items }}"
+  loop_control:
+    loop_var: item_haproxy_backend
+  notify: Restart haproxy
+- name: Deploy HAProxy custom error pages
+  ansible.builtin.copy:
+    src: haproxy_errors/{{ item_haproxy_error }}.http
+    dest: "{{ haproxy_config_dir }}/errors/{{ item_haproxy_error }}.http"
+    owner: root
+    group: "{{ haproxy_group }}"
+    mode: "0644"
+    backup: true
+  loop:
+    - "503"
+    - "408"
+  loop_control:
+    loop_var: item_haproxy_error
+- name: Deploy stick-tables configuration (production only)
+  ansible.builtin.copy:
+    content: "# Managed by Ansible\nstick-table type ip size {{ haproxy_stick_table_size }} expire {{ haproxy_stick_table_expire }}\n"
+    dest: "{{ haproxy_config_dir }}/conf.d/stick-tables.cfg"
+    owner: root
+    group: "{{ haproxy_group }}"
+    mode: "0640"
+    backup: true
+  when: haproxy_stick_table_enabled | bool
+  notify: Restart haproxy

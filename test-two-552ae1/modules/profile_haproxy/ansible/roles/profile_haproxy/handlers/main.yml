@@ -1,0 +1,12 @@
+- name: Restart haproxy
+  ansible.builtin.service:
+    name: '{{ haproxy_service_name }}'
+    state: restarted
+- name: Reload haproxy
+  ansible.builtin.service:
+    name: '{{ haproxy_service_name }}'
+    state: reloaded
+- name: Validate haproxy config
+  ansible.builtin.command:
+    cmd: haproxy -c -f {{ haproxy_config_file }} -f {{ haproxy_config_dir }}/conf.d
+  changed_when: false

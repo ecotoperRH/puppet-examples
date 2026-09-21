@@ -1,0 +1,10 @@
+haproxy_firewall_provider: ufw
+haproxy_extra_packages:
+- hatop
+haproxy_selinux_enabled: false
+base_utils_utility_packages:
+- vim
+- wget
+- curl
+- jq
+- dnsutils

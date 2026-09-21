@@ -1,0 +1,58 @@
+# Managed by Ansible — do not edit manually
+# Role: profile_haproxy
+
+global
+    log         {{ haproxy_log_server }} {{ haproxy_log_facility }} {{ haproxy_log_level }}
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     {{ haproxy_global_maxconn }}
+    user        {{ haproxy_user }}
+    group       {{ haproxy_group }}
+    daemon
+    stats socket /var/lib/haproxy/stats mode 660 level admin
+{% if haproxy_ssl_enabled %}
+    ssl-default-bind-ciphers {{ haproxy_ssl_ciphers }}
+    ssl-default-bind-options no-sslv3 no-tlsv10 no-tlsv11
+    tune.ssl.default-dh-param 2048
+{% endif %}
+
+defaults
+    log     global
+    mode    http
+    option  httplog
+    option  dontlognull
+    option  forwardfor
+    option  http-server-close
+    timeout connect {{ haproxy_connect_timeout }}
+    timeout client  {{ haproxy_client_timeout }}
+    timeout server  {{ haproxy_server_timeout }}
+    retries {{ haproxy_retries }}
+    errorfile 503 {{ haproxy_config_dir }}/errors/503.http
+    errorfile 408 {{ haproxy_config_dir }}/errors/408.http
+
+{% if haproxy_stats_enabled %}
+listen stats
+    bind *:{{ haproxy_stats_port }}
+    stats enable
+    stats uri {{ haproxy_stats_uri }}
+    stats realm HAProxy\ Statistics
+    stats auth {{ stats_user }}:{{ stats_password }}
+    stats admin if TRUE
+    stats refresh 30s
+{% endif %}
+
+frontend http_front
+    bind *:80
+{% if haproxy_ssl_enabled %}
+    bind *:443 ssl crt {{ haproxy_ssl_cert_path }}/haproxy.pem
+    http-request redirect scheme https unless { ssl_fc }
+{% endif %}
+    default_backend webservers
+
+# Backend configuration is loaded from conf.d/ fragments below
+{% for name, config in haproxy_backends.items() %}
+include {{ haproxy_config_dir }}/conf.d/{{ name }}.cfg
+{% endfor %}
+{% if haproxy_stick_table_enabled %}
+include {{ haproxy_config_dir }}/conf.d/stick-tables.cfg
+{% endif %}

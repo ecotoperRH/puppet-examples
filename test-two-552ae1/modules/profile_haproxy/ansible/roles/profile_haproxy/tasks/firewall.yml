@@ -1,0 +1,59 @@
+---
+- name: Open HTTP/HTTPS ports in firewalld
+  ansible.posix.firewalld:
+    port: "{{ item_haproxy_fw_port }}/tcp"
+    zone: "{{ haproxy_firewall_zone }}"
+    permanent: true
+    immediate: true
+    state: enabled
+  loop:
+    - "80"
+    - "443"
+  loop_control:
+    loop_var: item_haproxy_fw_port
+  when: haproxy_firewall_provider == 'firewalld'
+- name: Open HAProxy stats port in firewalld
+  ansible.posix.firewalld:
+    port: "{{ haproxy_stats_port }}/tcp"
+    zone: "{{ haproxy_firewall_zone }}"
+    permanent: true
+    immediate: true
+    state: enabled
+  when:
+    - haproxy_firewall_provider == 'firewalld'
+    - haproxy_stats_enabled | bool
+- name: Install ufw package
+  ansible.builtin.package:
+    name: ufw
+    state: present
+  when: haproxy_firewall_provider == 'ufw'
+- name: Allow HTTP through ufw
+  ansible.builtin.command:
+    cmd: ufw allow 80/tcp
+  register: ufw_allow_http_result
+  changed_when: "'Rules updated' in ufw_allow_http_result.stdout"
+  when: haproxy_firewall_provider == 'ufw'
+- name: Allow HTTPS through ufw
+  ansible.builtin.command:
+    cmd: ufw allow 443/tcp
+  register: ufw_allow_https_result
+  changed_when: "'Rules updated' in ufw_allow_https_result.stdout"
+  when: haproxy_firewall_provider == 'ufw'
+- name: Allow HAProxy stats port through ufw
+  ansible.builtin.command:
+    cmd: ufw allow {{ haproxy_stats_port }}/tcp
+  register: ufw_allow_stats_result
+  changed_when: "'Rules updated' in ufw_allow_stats_result.stdout"
+  when:
+    - haproxy_firewall_provider == 'ufw'
+    - haproxy_stats_enabled | bool
+- name: Enable ufw
+  ansible.builtin.command:
+    cmd: ufw --force enable
+  register: ufw_enable_result
+  changed_when: "'Firewall is active' in ufw_enable_result.stdout"
+  when: haproxy_firewall_provider == 'ufw'
+- name: Warn about unknown firewall provider
+  ansible.builtin.debug:
+    msg: "Unknown firewall provider: {{ haproxy_firewall_provider }} — no firewall rules applied"
+  when: haproxy_firewall_provider not in ['firewalld', 'ufw']

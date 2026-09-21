@@ -1,0 +1,280 @@
+- name: Verify HAProxy core configuration files
+  hosts: all
+  gather_facts: false
+  tasks:
+  - name: Stat core HAProxy config files
+    ansible.builtin.stat:
+      path: '{{ item_haproxy_cfg }}'
+    loop:
+    - /tmp/molecule_test/etc/haproxy/haproxy.cfg
+    - /tmp/molecule_test/etc/logrotate.d/haproxy
+    loop_control:
+      loop_var: item_haproxy_cfg
+    register: haproxy_core_stat
+  - name: Assert core config files exist and are non-empty
+    ansible.builtin.assert:
+      that:
+      - item_haproxy_core['stat']['exists']
+      - item_haproxy_core['stat']['size'] > 0
+      fail_msg: Expected HAProxy core config file is missing or empty
+    loop: '{{ haproxy_core_stat[''results''] }}'
+    loop_control:
+      loop_var: item_haproxy_core
+  - name: Slurp haproxy.cfg to inspect content
+    ansible.builtin.slurp:
+      src: /tmp/molecule_test/etc/haproxy/haproxy.cfg
+    register: haproxy_cfg_slurp
+  - name: Assert haproxy.cfg contains expected global directives
+    ansible.builtin.assert:
+      that:
+      - '''maxconn'' in (haproxy_cfg_slurp[''content''] | b64decode)'
+      - '''local0'' in (haproxy_cfg_slurp[''content''] | b64decode)'
+      - '''haproxy'' in (haproxy_cfg_slurp[''content''] | b64decode)'
+      - '''timeout connect'' in (haproxy_cfg_slurp[''content''] | b64decode)'
+      - '''timeout client'' in (haproxy_cfg_slurp[''content''] | b64decode)'
+      - '''timeout server'' in (haproxy_cfg_slurp[''content''] | b64decode)'
+      fail_msg: haproxy.cfg is missing expected global directives
+  - name: Assert haproxy.cfg contains SSL directives (production)
+    ansible.builtin.assert:
+      that:
+      - '''ssl-default-bind-ciphers'' in (haproxy_cfg_slurp[''content''] | b64decode)'
+      - '''ECDHE-ECDSA-AES256-GCM-SHA384'' in (haproxy_cfg_slurp[''content''] | b64decode)'
+      fail_msg: haproxy.cfg is missing expected SSL directives
+  - name: Assert haproxy.cfg contains stats listener block
+    ansible.builtin.assert:
+      that:
+      - '''listen stats'' in (haproxy_cfg_slurp[''content''] | b64decode)'
+      - '''stats uri /haproxy-stats'' in (haproxy_cfg_slurp[''content''] | b64decode)'
+      - '''9001'' in (haproxy_cfg_slurp[''content''] | b64decode)'
+      fail_msg: haproxy.cfg is missing expected stats listener block
+  - name: Assert haproxy.cfg references error pages
+    ansible.builtin.assert:
+      that:
+      - '''errorfile 503'' in (haproxy_cfg_slurp[''content''] | b64decode)'
+      - '''errorfile 408'' in (haproxy_cfg_slurp[''content''] | b64decode)'
+      fail_msg: haproxy.cfg is missing errorfile directives
+  - name: Slurp logrotate config to inspect content
+    ansible.builtin.slurp:
+      src: /tmp/molecule_test/etc/logrotate.d/haproxy
+    register: haproxy_logrotate_slurp
+  - name: Assert logrotate config contains expected directives
+    ansible.builtin.assert:
+      that:
+      - '''daily'' in (haproxy_logrotate_slurp[''content''] | b64decode)'
+      - '''rotate 14'' in (haproxy_logrotate_slurp[''content''] | b64decode)'
+      - '''compress'' in (haproxy_logrotate_slurp[''content''] | b64decode)'
+      - '''postrotate'' in (haproxy_logrotate_slurp[''content''] | b64decode)'
+      fail_msg: logrotate config is missing expected directives
+- name: Verify HAProxy backend configuration fragments
+  hosts: all
+  gather_facts: false
+  tasks:
+  - name: Stat backend conf.d fragment files
+    ansible.builtin.stat:
+      path: '{{ item_haproxy_frag }}'
+    loop:
+    - /tmp/molecule_test/etc/haproxy/conf.d/webservers.cfg
+    - /tmp/molecule_test/etc/haproxy/conf.d/api.cfg
+    - /tmp/molecule_test/etc/haproxy/conf.d/internal_monitoring.cfg
+    - /tmp/molecule_test/etc/haproxy/conf.d/stick-tables.cfg
+    loop_control:
+      loop_var: item_haproxy_frag
+    register: haproxy_frag_stat
+  - name: Assert all backend fragment files exist and are non-empty
+    ansible.builtin.assert:
+      that:
+      - item_haproxy_frag_result['stat']['exists']
+      - item_haproxy_frag_result['stat']['size'] > 0
+      fail_msg: Expected backend fragment file is missing or empty
+    loop: '{{ haproxy_frag_stat[''results''] }}'
+    loop_control:
+      loop_var: item_haproxy_frag_result
+  - name: Slurp webservers backend fragment
+    ansible.builtin.slurp:
+      src: /tmp/molecule_test/etc/haproxy/conf.d/webservers.cfg
+    register: haproxy_webservers_slurp
+  - name: Assert webservers fragment contains expected backend config
+    ansible.builtin.assert:
+      that:
+      - '''backend webservers'' in (haproxy_webservers_slurp[''content''] | b64decode)'
+      - '''balance roundrobin'' in (haproxy_webservers_slurp[''content''] | b64decode)'
+      - '''web1-fra'' in (haproxy_webservers_slurp[''content''] | b64decode)'
+      - '''web2-fra'' in (haproxy_webservers_slurp[''content''] | b64decode)'
+      - '''web3-fra'' in (haproxy_webservers_slurp[''content''] | b64decode)'
+      - '''10.100.1.10'' in (haproxy_webservers_slurp[''content''] | b64decode)'
+      - '''httpchk GET /health'' in (haproxy_webservers_slurp[''content''] | b64decode)'
+      fail_msg: webservers.cfg is missing expected backend configuration
+  - name: Slurp api backend fragment
+    ansible.builtin.slurp:
+      src: /tmp/molecule_test/etc/haproxy/conf.d/api.cfg
+    register: haproxy_api_slurp
+  - name: Assert api fragment contains expected backend config
+    ansible.builtin.assert:
+      that:
+      - '''backend api'' in (haproxy_api_slurp[''content''] | b64decode)'
+      - '''balance leastconn'' in (haproxy_api_slurp[''content''] | b64decode)'
+      - '''api1-fra'' in (haproxy_api_slurp[''content''] | b64decode)'
+      - '''api2-fra'' in (haproxy_api_slurp[''content''] | b64decode)'
+      - '''10.100.2.10'' in (haproxy_api_slurp[''content''] | b64decode)'
+      - '''httpchk GET /api/health'' in (haproxy_api_slurp[''content''] | b64decode)'
+      - '''weight 200'' in (haproxy_api_slurp[''content''] | b64decode)'
+      fail_msg: api.cfg is missing expected backend configuration
+  - name: Slurp internal_monitoring backend fragment
+    ansible.builtin.slurp:
+      src: /tmp/molecule_test/etc/haproxy/conf.d/internal_monitoring.cfg
+    register: haproxy_mon_slurp
+  - name: Assert internal_monitoring fragment contains expected backend config
+    ansible.builtin.assert:
+      that:
+      - '''backend internal_monitoring'' in (haproxy_mon_slurp[''content''] | b64decode)'
+      - '''balance roundrobin'' in (haproxy_mon_slurp[''content''] | b64decode)'
+      - '''prom1-fra'' in (haproxy_mon_slurp[''content''] | b64decode)'
+      - '''10.100.3.10'' in (haproxy_mon_slurp[''content''] | b64decode)'
+      - '''httpchk GET /-/healthy'' in (haproxy_mon_slurp[''content''] | b64decode)'
+      fail_msg: internal_monitoring.cfg is missing expected backend configuration
+  - name: Slurp stick-tables config
+    ansible.builtin.slurp:
+      src: /tmp/molecule_test/etc/haproxy/conf.d/stick-tables.cfg
+    register: haproxy_stick_slurp
+  - name: Assert stick-tables config contains expected directives
+    ansible.builtin.assert:
+      that:
+      - '''stick-table'' in (haproxy_stick_slurp[''content''] | b64decode)'
+      - '''200k'' in (haproxy_stick_slurp[''content''] | b64decode)'
+      - '''30m'' in (haproxy_stick_slurp[''content''] | b64decode)'
+      fail_msg: stick-tables.cfg is missing expected stick-table directives
+- name: Verify HAProxy error pages and directory structure
+  hosts: all
+  gather_facts: false
+  tasks:
+  - name: Stat HAProxy error page files
+    ansible.builtin.stat:
+      path: '{{ item_haproxy_err }}'
+    loop:
+    - /tmp/molecule_test/etc/haproxy/errors/503.http
+    - /tmp/molecule_test/etc/haproxy/errors/408.http
+    loop_control:
+      loop_var: item_haproxy_err
+    register: haproxy_err_stat
+  - name: Assert error page files exist and are non-empty
+    ansible.builtin.assert:
+      that:
+      - item_haproxy_err_result['stat']['exists']
+      - item_haproxy_err_result['stat']['size'] > 0
+      fail_msg: Expected HAProxy error page file is missing or empty
+    loop: '{{ haproxy_err_stat[''results''] }}'
+    loop_control:
+      loop_var: item_haproxy_err_result
+  - name: Stat required HAProxy directories
+    ansible.builtin.stat:
+      path: '{{ item_haproxy_d }}'
+    loop:
+    - /tmp/molecule_test/etc/haproxy
+    - /tmp/molecule_test/etc/haproxy/conf.d
+    - /tmp/molecule_test/etc/haproxy/errors
+    - /tmp/molecule_test/var/lib/haproxy
+    loop_control:
+      loop_var: item_haproxy_d
+    register: haproxy_dir_stat
+  - name: Assert all required directories exist
+    ansible.builtin.assert:
+      that:
+      - item_haproxy_dir_result['stat']['exists']
+      - item_haproxy_dir_result['stat']['isdir']
+      fail_msg: Expected HAProxy directory is missing
+    loop: '{{ haproxy_dir_stat[''results''] }}'
+    loop_control:
+      loop_var: item_haproxy_dir_result
+  - name: Slurp 503 error page to verify HTTP content
+    ansible.builtin.slurp:
+      src: /tmp/molecule_test/etc/haproxy/errors/503.http
+    register: haproxy_503_slurp
+  - name: Assert 503 error page contains HTTP response content
+    ansible.builtin.assert:
+      that:
+      - '''503'' in (haproxy_503_slurp[''content''] | b64decode)'
+      fail_msg: 503.http error page does not contain expected HTTP content
+  - name: Slurp 408 error page to verify HTTP content
+    ansible.builtin.slurp:
+      src: /tmp/molecule_test/etc/haproxy/errors/408.http
+    register: haproxy_408_slurp
+  - name: Assert 408 error page contains HTTP response content
+    ansible.builtin.assert:
+      that:
+      - '''408'' in (haproxy_408_slurp[''content''] | b64decode)'
+      fail_msg: 408.http error page does not contain expected HTTP content
+- name: Verify HAProxy service and runtime endpoints (molecule-notest)
+  hosts: all
+  gather_facts: false
+  tasks:
+  - name: Gather service facts
+    ansible.builtin.service_facts: null
+    tags: molecule-notest
+  - name: Assert haproxy service is present and running
+    ansible.builtin.assert:
+      that:
+      - '''haproxy.service'' in ansible_facts[''services'']'
+      - ansible_facts['services']['haproxy.service']['state'] == 'running'
+      fail_msg: haproxy service is not running
+    tags: molecule-notest
+  - name: Assert haproxy service is enabled
+    ansible.builtin.assert:
+      that:
+      - ansible_facts['services']['haproxy.service']['status'] == 'enabled'
+      fail_msg: haproxy service is not enabled
+    tags: molecule-notest
+  - name: Check HTTP frontend port 80 is listening
+    ansible.builtin.wait_for:
+      port: 80
+      timeout: 5
+    tags: molecule-notest
+  - name: Check HTTPS frontend port 443 is listening (production)
+    ansible.builtin.wait_for:
+      port: 443
+      timeout: 5
+    tags: molecule-notest
+  - name: Check stats endpoint port 9001 is listening (lb01)
+    ansible.builtin.wait_for:
+      port: 9001
+      timeout: 5
+    tags: molecule-notest
+  - name: Check HTTP frontend responds
+    ansible.builtin.uri:
+      url: http://localhost/
+      method: GET
+      status_code:
+      - 200
+      - 301
+      - 302
+      - 503
+    tags: molecule-notest
+  - name: Check stats endpoint responds with basic auth
+    ansible.builtin.uri:
+      url: http://localhost:9001/haproxy-stats
+      method: GET
+      url_username: admin
+      url_password: '{{ stats_password | default(''changeme'') }}'
+      force_basic_auth: true
+      status_code:
+      - 200
+    tags: molecule-notest
+  - name: Validate HAProxy configuration syntax
+    ansible.builtin.command:
+      argv:
+      - haproxy
+      - -c
+      - -f
+      - /etc/haproxy/haproxy.cfg
+    changed_when: false
+    tags: molecule-notest
+  - name: Check HAProxy runtime socket exists
+    ansible.builtin.stat:
+      path: /var/lib/haproxy/stats
+    register: haproxy_socket_stat
+    tags: molecule-notest
+  - name: Assert HAProxy runtime socket exists
+    ansible.builtin.assert:
+      that:
+      - haproxy_socket_stat['stat']['exists']
+      fail_msg: HAProxy runtime socket /var/lib/haproxy/stats not found
+    tags: molecule-notest

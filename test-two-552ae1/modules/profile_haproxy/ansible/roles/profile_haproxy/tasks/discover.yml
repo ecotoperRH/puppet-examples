@@ -1,0 +1,5 @@
+---
+- name: Report resolved backends (discovery summary)
+  ansible.builtin.debug:
+    msg: "HAProxy backends resolved: {{ haproxy_backends.keys() | list | join(', ') }}. Backend server counts: {% for name, cfg in haproxy_backends.items() %} {{
+      name }}: {{ cfg['servers'] | length }} server(s) {% endfor %}"

@@ -1,0 +1,9 @@
+haproxy_global_maxconn: 16384
+haproxy_ssl_enabled: true
+haproxy_log_level: warning
+haproxy_client_timeout: 60s
+haproxy_server_timeout: 60s
+haproxy_stats_enabled: false
+haproxy_stick_table_enabled: true
+haproxy_stick_table_size: 200k
+haproxy_stick_table_expire: 30m

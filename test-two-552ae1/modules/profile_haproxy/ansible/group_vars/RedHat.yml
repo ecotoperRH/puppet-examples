@@ -1,0 +1,12 @@
+haproxy_firewall_provider: firewalld
+haproxy_firewall_zone: public
+haproxy_extra_packages:
+- haproxy-systemd-wrapper
+- policycoreutils-python-utils
+haproxy_selinux_enabled: true
+base_utils_utility_packages:
+- vim-enhanced
+- wget
+- curl
+- jq
+- bind-utils

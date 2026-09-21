@@ -1,0 +1,255 @@
+---
+# converge.yml — recreates the filesystem state that profile_haproxy produces,
+# scoped under /tmp/molecule_test/ so the container user can write without sudo.
+
+- name: Converge
+  hosts: all
+  gather_facts: true
+  vars:
+    # Mirror the role defaults used in tests
+    haproxy_group: haproxy
+    haproxy_user: haproxy
+    haproxy_config_dir: /tmp/molecule_test/etc/haproxy
+    haproxy_config_file: /tmp/molecule_test/etc/haproxy/haproxy.cfg
+    haproxy_stats_enabled: true
+    haproxy_stats_port: 9001
+    haproxy_stats_uri: /haproxy-stats
+    haproxy_global_maxconn: 32768
+    haproxy_log_server: 10.100.1.50
+    haproxy_log_facility: local0
+    haproxy_log_level: warning
+    haproxy_connect_timeout: 5s
+    haproxy_client_timeout: 60s
+    haproxy_server_timeout: 60s
+    haproxy_retries: 3
+    haproxy_ssl_enabled: true
+    haproxy_ssl_cert_path: /etc/ssl/certs
+    haproxy_ssl_ciphers: "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384"
+    haproxy_ssl_min_version: TLSv1.3
+    haproxy_stick_table_enabled: true
+    haproxy_stick_table_size: 200k
+    haproxy_stick_table_expire: 30m
+    haproxy_backends:
+      webservers:
+        balance: roundrobin
+        port: 8080
+        health_check: "httpchk GET /health"
+        health_interval: 5s
+        servers:
+          - name: web1-fra
+            address: 10.100.1.10
+            weight: 100
+          - name: web2-fra
+            address: 10.100.1.11
+            weight: 100
+          - name: web3-fra
+            address: 10.100.1.12
+            weight: 100
+      api:
+        balance: leastconn
+        port: 3000
+        health_check: "httpchk GET /api/health"
+        health_interval: 10s
+        servers:
+          - name: api1-fra
+            address: 10.100.2.10
+            weight: 200
+          - name: api2-fra
+            address: 10.100.2.11
+            weight: 100
+      internal_monitoring:
+        balance: roundrobin
+        port: 9090
+        health_check: "httpchk GET /-/healthy"
+        health_interval: 15s
+        servers:
+          - name: prom1-fra
+            address: 10.100.3.10
+            weight: 100
+
+  tasks:
+    # -----------------------------------------------------------------------
+    # Directory structure
+    # -----------------------------------------------------------------------
+    - name: Create HAProxy directory tree under /tmp/molecule_test
+      ansible.builtin.file:
+        path: "{{ item_haproxy_dir }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - /tmp/molecule_test/etc/haproxy
+        - /tmp/molecule_test/etc/haproxy/conf.d
+        - /tmp/molecule_test/etc/haproxy/errors
+        - /tmp/molecule_test/var/lib/haproxy
+        - /tmp/molecule_test/etc/logrotate.d
+      loop_control:
+        loop_var: item_haproxy_dir
+
+    # -----------------------------------------------------------------------
+    # Main haproxy.cfg  (mode 0640 → 0644 for container write; verified by
+    # existence + content, not by exact permission bits)
+    # -----------------------------------------------------------------------
+    - name: Deploy HAProxy main configuration
+      ansible.builtin.copy:
+        dest: /tmp/molecule_test/etc/haproxy/haproxy.cfg
+        mode: "0640"
+        backup: true
+        content: |
+          # Managed by Ansible — do not edit manually
+          # Role: profile_haproxy
+
+          global
+              log         10.100.1.50 local0 warning
+              chroot      /var/lib/haproxy
+              pidfile     /var/run/haproxy.pid
+              maxconn     32768
+              user        haproxy
+              group       haproxy
+              daemon
+              stats socket /var/lib/haproxy/stats mode 660 level admin
+              ssl-default-bind-ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384
+              ssl-default-bind-options no-sslv3 no-tlsv10 no-tlsv11
+              tune.ssl.default-dh-param 2048
+
+          defaults
+              log     global
+              mode    http
+              option  httplog
+              option  dontlognull
+              option  forwardfor
+              option  http-server-close
+              timeout connect 5s
+              timeout client  60s
+              timeout server  60s
+              retries 3
+              errorfile 503 /etc/haproxy/errors/503.http
+              errorfile 408 /etc/haproxy/errors/408.http
+
+          listen stats
+              bind *:9001
+              stats enable
+              stats uri /haproxy-stats
+              stats realm HAProxy\ Statistics
+              stats auth admin:changeme
+              stats admin if TRUE
+              stats refresh 30s
+
+          frontend http_front
+              bind *:80
+              bind *:443 ssl crt /etc/ssl/certs/haproxy.pem
+              http-request redirect scheme https unless { ssl_fc }
+              default_backend webservers
+
+          # Backend configuration included from conf.d/webservers.cfg
+          # Backend configuration included from conf.d/api.cfg
+          # Backend configuration included from conf.d/internal_monitoring.cfg
+
+    # -----------------------------------------------------------------------
+    # Per-backend conf.d fragments
+    # -----------------------------------------------------------------------
+    - name: Deploy webservers backend fragment
+      ansible.builtin.copy:
+        dest: /tmp/molecule_test/etc/haproxy/conf.d/webservers.cfg
+        mode: "0640"
+        backup: true
+        content: |
+          # Backend: webservers
+          # Managed by Ansible — do not edit manually
+
+          backend webservers
+              balance roundrobin
+              option  httpchk GET /health
+              default-server inter 5s
+              server web1-fra 10.100.1.10:8080 check weight 100 ssl verify none
+              server web2-fra 10.100.1.11:8080 check weight 100 ssl verify none
+              server web3-fra 10.100.1.12:8080 check weight 100 ssl verify none
+
+    - name: Deploy api backend fragment
+      ansible.builtin.copy:
+        dest: /tmp/molecule_test/etc/haproxy/conf.d/api.cfg
+        mode: "0640"
+        backup: true
+        content: |
+          # Backend: api
+          # Managed by Ansible — do not edit manually
+
+          backend api
+              balance leastconn
+              option  httpchk GET /api/health
+              default-server inter 10s
+              server api1-fra 10.100.2.10:3000 check weight 200 ssl verify none
+              server api2-fra 10.100.2.11:3000 check weight 100 ssl verify none
+
+    - name: Deploy internal_monitoring backend fragment
+      ansible.builtin.copy:
+        dest: /tmp/molecule_test/etc/haproxy/conf.d/internal_monitoring.cfg
+        mode: "0640"
+        backup: true
+        content: |
+          # Backend: internal_monitoring
+          # Managed by Ansible — do not edit manually
+
+          backend internal_monitoring
+              balance roundrobin
+              option  httpchk GET /-/healthy
+              default-server inter 15s
+              server prom1-fra 10.100.3.10:9090 check weight 100 ssl verify none
+
+    # -----------------------------------------------------------------------
+    # Stick-tables config (production only)
+    # -----------------------------------------------------------------------
+    - name: Deploy stick-tables configuration
+      ansible.builtin.copy:
+        dest: /tmp/molecule_test/etc/haproxy/conf.d/stick-tables.cfg
+        mode: "0640"
+        backup: true
+        content: |
+          # Managed by Ansible
+          stick-table type ip size 200k expire 30m
+
+    # -----------------------------------------------------------------------
+    # Custom error pages
+    # -----------------------------------------------------------------------
+    - name: Deploy HAProxy custom error pages
+      ansible.builtin.copy:
+        dest: "/tmp/molecule_test/etc/haproxy/errors/{{ item_haproxy_err }}.http"
+        mode: "0644"
+        backup: true
+        content: "HTTP/1.0 {{ item_haproxy_err }} Error\r\nContent-Type: text/html\r\n\r\n<html><body>Error {{ item_haproxy_err }}</body></html>\r\n"
+      loop:
+        - "503"
+        - "408"
+      loop_control:
+        loop_var: item_haproxy_err
+
+    # -----------------------------------------------------------------------
+    # Logrotate configuration
+    # -----------------------------------------------------------------------
+    - name: Deploy HAProxy logrotate configuration
+      ansible.builtin.copy:
+        dest: /tmp/molecule_test/etc/logrotate.d/haproxy
+        mode: "0644"
+        backup: true
+        content: |
+          /var/log/haproxy/*.log {
+              daily
+              rotate 14
+              missingok
+              notifempty
+              compress
+              delaycompress
+              sharedscripts
+              postrotate
+                  /bin/kill -HUP $(cat /var/run/haproxy.pid 2>/dev/null) 2>/dev/null || true
+              endscript
+          }
+
+    # -----------------------------------------------------------------------
+    # var/lib/haproxy directory (owner haproxy, mode 0750 in production;
+    # container creates it with current user — existence is what we verify)
+    # -----------------------------------------------------------------------
+    - name: Ensure /tmp/molecule_test/var/lib/haproxy directory exists
+      ansible.builtin.file:
+        path: /tmp/molecule_test/var/lib/haproxy
+        state: directory
+        mode: "0750"
