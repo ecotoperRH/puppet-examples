@@ -1,0 +1,15 @@
+# Backend: {{ haproxy_backend_name }}
+# Managed by Ansible — do not edit manually
+
+backend {{ haproxy_backend_name }}
+    balance {{ haproxy_balance }}
+{% if haproxy_health_check is defined and haproxy_health_check %}
+    option  {{ haproxy_health_check }}
+{% endif %}
+{% if haproxy_health_interval is defined and haproxy_health_interval %}
+    default-server inter {{ haproxy_health_interval }}
+{% endif %}
+{% for server in haproxy_servers %}
+    server {{ server['name'] }} {{ server['address'] }}:{{ haproxy_backend_port }} check weight {{ server['weight'] }}{% if profile_haproxy_ssl_enabled %} ssl verify none{% endif %}
+
+{% endfor %}

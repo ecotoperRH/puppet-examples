@@ -1,0 +1,40 @@
+profile_haproxy_global_maxconn: 32768
+profile_haproxy_ssl_ciphers: ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384
+profile_haproxy_ssl_min_version: TLSv1.3
+profile_haproxy_backends:
+  webservers:
+    balance: roundrobin
+    port: 8080
+    health_check: httpchk GET /health
+    health_interval: 5s
+    servers:
+    - name: web1-fra
+      address: 10.100.1.10
+      weight: 100
+    - name: web2-fra
+      address: 10.100.1.11
+      weight: 100
+    - name: web3-fra
+      address: 10.100.1.12
+      weight: 100
+  api:
+    balance: leastconn
+    port: 3000
+    health_check: httpchk GET /api/health
+    health_interval: 10s
+    servers:
+    - name: api1-fra
+      address: 10.100.2.10
+      weight: 100
+    - name: api2-fra
+      address: 10.100.2.11
+      weight: 100
+  internal_monitoring:
+    balance: roundrobin
+    port: 9090
+    health_check: httpchk GET /-/healthy
+    health_interval: 15s
+    servers:
+    - name: prom1-fra
+      address: 10.100.3.10
+      weight: 100

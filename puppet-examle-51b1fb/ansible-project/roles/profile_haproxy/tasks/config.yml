@@ -1,0 +1,64 @@
+---
+- name: Ensure HAProxy errors directory exists
+  ansible.builtin.file:
+    path: "{{ profile_haproxy_config_dir }}/errors"
+    state: directory
+    owner: root
+    group: "{{ profile_haproxy_group }}"
+    mode: "0755"
+- name: Deploy HAProxy main configuration file
+  ansible.builtin.template:
+    src: haproxy.cfg.j2
+    dest: "{{ profile_haproxy_config_file }}"
+    owner: root
+    group: "{{ profile_haproxy_group }}"
+    mode: "0640"
+    backup: true
+  notify: Reload HAProxy
+- name: Deploy per-backend configuration fragments
+  ansible.builtin.template:
+    src: backend.conf.j2
+    dest: "{{ profile_haproxy_config_dir }}/conf.d/{{ item_haproxy_backend['key'] }}.cfg"
+    owner: root
+    group: "{{ profile_haproxy_group }}"
+    mode: "0640"
+    backup: true
+  vars:
+    haproxy_backend_name: "{{ item_haproxy_backend['key'] }}"
+    haproxy_balance: "{{ item_haproxy_backend['value']['balance'] }}"
+    haproxy_backend_port: "{{ item_haproxy_backend['value']['port'] }}"
+    haproxy_servers: "{{ item_haproxy_backend['value']['servers'] }}"
+    haproxy_health_check: "{{ item_haproxy_backend['value']['health_check'] | default('') }}"
+    haproxy_health_interval: "{{ item_haproxy_backend['value']['health_interval'] | default('') }}"
+  loop: "{{ profile_haproxy_backends | dict2items }}"
+  loop_control:
+    loop_var: item_haproxy_backend
+  notify: Reload HAProxy
+- name: Deploy custom HAProxy error pages
+  ansible.builtin.copy:
+    src: errors/{{ item_haproxy_error }}.http
+    dest: "{{ profile_haproxy_config_dir }}/errors/{{ item_haproxy_error }}.http"
+    owner: root
+    group: "{{ profile_haproxy_group }}"
+    mode: "0644"
+    backup: true
+  loop:
+    - "503"
+    - "408"
+  loop_control:
+    loop_var: item_haproxy_error
+- name: Deploy stick-table configuration (production only)
+  ansible.builtin.copy:
+    content: "# Managed by Ansible\nstick-table type ip size {{ profile_haproxy_stick_table_size }} expire {{ profile_haproxy_stick_table_expire }} store conn_cur\n"
+    dest: "{{ profile_haproxy_config_dir }}/conf.d/stick-tables.cfg"
+    owner: root
+    group: "{{ profile_haproxy_group }}"
+    mode: "0640"
+    backup: true
+  when: profile_haproxy_stick_table_enabled | bool
+  notify: Reload HAProxy
+- name: Remove stick-table configuration when disabled
+  ansible.builtin.file:
+    path: "{{ profile_haproxy_config_dir }}/conf.d/stick-tables.cfg"
+    state: absent
+  when: not (profile_haproxy_stick_table_enabled | bool)

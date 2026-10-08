@@ -1,0 +1,185 @@
+---
+argument_specs:
+  main:
+    short_description: Install and configure HAProxy as a load balancer
+    description:
+      - Deploys HAProxy with configurable backends, SSL, stats UI, firewall rules, and log rotation. Supports dynamic backend discovery via inventory groups.
+    options:
+      profile_haproxy_package_name:
+        type: str
+        required: false
+        default: haproxy
+        description: Name of the HAProxy package to install.
+      profile_haproxy_config_dir:
+        type: str
+        required: false
+        default: /etc/haproxy
+        description: Directory where HAProxy configuration files are stored.
+      profile_haproxy_config_file:
+        type: str
+        required: false
+        default: /etc/haproxy/haproxy.cfg
+        description: Path to the main HAProxy configuration file.
+      profile_haproxy_service_name:
+        type: str
+        required: false
+        default: haproxy
+        description: Name of the HAProxy system service.
+      profile_haproxy_user:
+        type: str
+        required: false
+        default: haproxy
+        description: System user that HAProxy runs as.
+      profile_haproxy_group:
+        type: str
+        required: false
+        default: haproxy
+        description: System group that HAProxy runs as.
+      profile_haproxy_stats_enabled:
+        type: bool
+        required: false
+        default: true
+        description: Whether to enable the HAProxy stats UI.
+      profile_haproxy_stats_port:
+        type: int
+        required: false
+        default: 9000
+        description: TCP port for the HAProxy stats UI listener.
+      profile_haproxy_stats_uri:
+        type: str
+        required: false
+        default: /haproxy-stats
+        description: URI path for the HAProxy stats UI.
+      stats_user:
+        type: str
+        required: true
+        description: Username for HAProxy stats UI authentication. Injected at runtime by the AAP HAProxy credential type.
+      stats_password:
+        type: str
+        required: true
+        description: Password for HAProxy stats UI authentication. Injected at runtime by the AAP HAProxy credential type.
+      profile_haproxy_global_maxconn:
+        type: int
+        required: false
+        default: 4096
+        description: Global maximum number of concurrent connections for HAProxy.
+      profile_haproxy_client_timeout:
+        type: str
+        required: false
+        default: 30s
+        description: HAProxy client-side connection timeout.
+      profile_haproxy_server_timeout:
+        type: str
+        required: false
+        default: 30s
+        description: HAProxy server-side connection timeout.
+      profile_haproxy_connect_timeout:
+        type: str
+        required: false
+        default: 5s
+        description: HAProxy connection establishment timeout.
+      profile_haproxy_retries:
+        type: int
+        required: false
+        default: 3
+        description: Number of connection retries before marking a server as down.
+      profile_haproxy_ssl_enabled:
+        type: bool
+        required: false
+        default: false
+        description: Whether to enable SSL/TLS on the HTTPS frontend.
+      profile_haproxy_ssl_cert_path:
+        type: str
+        required: false
+        default: /etc/ssl/certs
+        description: Directory containing SSL certificates.
+      profile_haproxy_ssl_key_path:
+        type: str
+        required: false
+        default: /etc/ssl/private
+        description: Directory containing SSL private keys.
+      profile_haproxy_ssl_ciphers:
+        type: str
+        required: false
+        default: ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256
+        description: Colon-separated list of SSL cipher suites for HAProxy.
+      profile_haproxy_ssl_min_version:
+        type: str
+        required: false
+        default: TLSv1.2
+        description: Minimum TLS version accepted by HAProxy (e.g. TLSv1.2, TLSv1.3).
+      profile_haproxy_log_server:
+        type: str
+        required: false
+        default: 127.0.0.1
+        description: IP address of the syslog server for HAProxy logs.
+      profile_haproxy_log_facility:
+        type: str
+        required: false
+        default: local0
+        description: Syslog facility used by HAProxy for logging.
+      profile_haproxy_log_level:
+        type: str
+        required: false
+        default: info
+        description: Log level for HAProxy (e.g. info, warning, debug).
+      profile_haproxy_stick_table_enabled:
+        type: bool
+        required: false
+        default: false
+        description: Whether to deploy a stick-table configuration for session persistence.
+      profile_haproxy_stick_table_size:
+        type: str
+        required: false
+        default: 100k
+        description: Maximum number of entries in the stick-table.
+      profile_haproxy_stick_table_expire:
+        type: str
+        required: false
+        default: 10m
+        description: Expiry time for stick-table entries.
+      profile_haproxy_extra_packages:
+        type: list
+        elements: str
+        required: false
+        default: []
+        description: Additional OS-specific packages to install alongside HAProxy.
+      profile_haproxy_selinux_enabled:
+        type: bool
+        required: false
+        default: false
+        description: Whether to set the haproxy_connect_any SELinux boolean (RedHat only).
+      profile_haproxy_firewall_provider:
+        type: str
+        required: false
+        default: ufw
+        description: Firewall provider to configure. Supported values are 'firewalld' (RedHat) and 'ufw' (Debian).
+      profile_haproxy_firewall_zone:
+        type: str
+        required: false
+        default: public
+        description: Firewalld zone to add HAProxy port rules to (firewalld provider only).
+      profile_haproxy_backends:
+        type: dict
+        required: false
+        default:
+          webservers:
+            balance: roundrobin
+            port: 8080
+            health_check: httpchk GET /health
+            health_interval: 5s
+            servers:
+              - name: web1
+                address: 10.0.1.10
+                weight: 100
+          api:
+            balance: leastconn
+            port: 3000
+            health_check: httpchk GET /api/health
+            health_interval: 10s
+            servers:
+              - name: api1
+                address: 10.0.2.10
+                weight: 100
+        description: "Dictionary of HAProxy backend definitions. Each key is the backend name; each value is a dict with keys: balance, port, servers (list of {name,
+          address, weight}), and optional health_check and health_interval. Override at group_vars or host_vars level to customise per environment."

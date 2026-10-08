@@ -1,0 +1,20 @@
+---
+- name: Validate HAProxy configuration syntax
+  ansible.builtin.command:
+    cmd: /usr/sbin/haproxy -c -f {{ profile_haproxy_config_file }}
+  changed_when: false
+  register: profile_haproxy_config_check
+- name: Deploy HAProxy log rotation configuration
+  ansible.builtin.copy:
+    content: "/var/log/haproxy/*.log {\n    daily\n    rotate 14\n    missingok\n    notifempty\n    compress\n    delaycompress\n    sharedscripts\n    postrotate\n\
+      \        /bin/kill -HUP $(cat /var/run/haproxy.pid 2>/dev/null) 2>/dev/null || true\n    endscript\n}\n"
+    dest: /etc/logrotate.d/haproxy
+    owner: root
+    group: root
+    mode: "0644"
+    backup: true
+- name: Ensure HAProxy service is started and enabled
+  ansible.builtin.service:
+    name: "{{ profile_haproxy_service_name }}"
+    state: started
+    enabled: true
