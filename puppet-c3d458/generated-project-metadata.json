@@ -1,0 +1,44 @@
+[
+  {
+    "name": "profile_app_stack",
+    "path": "modules/profile_app_stack",
+    "description": "Python application stack orchestrator that configures application, database, worker, logging, secrets, and systemd service dependencies with explicit ordering.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_haproxy",
+    "path": "modules/profile_haproxy",
+    "description": "HAProxy load-balancer profile managing installation, configuration, service operation, firewall rules, backends, health checks, logging, and optional TLS.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_redis_cluster",
+    "path": "modules/profile_redis_cluster",
+    "description": "Redis profile that installs and configures Redis with authentication, persistence, memory controls, and PuppetDB-oriented node discovery.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "base_utils",
+    "path": "site/modules/common/base_utils",
+    "description": "Shared utility module for base package installation, MOTD management, helper resources and functions, facts, Bolt plans, and service checks.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_app_stack",
+    "path": "site/modules/linux/profile_app_stack",
+    "description": "Linux site implementation of the Python and PostgreSQL application-stack orchestrator, including environment-specific settings, dependencies, systemd service configuration, logging, backups, and health checks.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_haproxy",
+    "path": "site/modules/linux/profile_haproxy",
+    "description": "Linux site implementation of the HAProxy load-balancer profile, managing installation, multi-backend configuration, discovery, services, TLS, health checks, and firewall phases.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_redis_cluster",
+    "path": "site/modules/linux/profile_redis_cluster",
+    "description": "Linux site implementation of the Redis profile, configuring authentication, bounded memory, append-only persistence, package and service management, logging, and PuppetDB-oriented discovery.",
+    "technology": "Puppet"
+  }
+]
