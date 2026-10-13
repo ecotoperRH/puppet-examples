@@ -1,0 +1,6 @@
+---
+- name: Remove obsolete Redis systemd ulimit drop-in
+  ansible.builtin.file:
+    path: /etc/systemd/system/redis-server.service.d/limit.conf
+    state: absent
+  notify: Reload systemd

@@ -1,0 +1,3 @@
+---
+- name: Converge through the project deployment entry point
+  ansible.builtin.import_playbook: ../../run_profile_redis_cluster.yml

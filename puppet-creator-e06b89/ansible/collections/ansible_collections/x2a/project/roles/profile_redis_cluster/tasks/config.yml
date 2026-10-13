@@ -1,0 +1,24 @@
+---
+- name: Ensure Redis configuration directory exists
+  ansible.builtin.file:
+    path: "{{ redis_cluster_config_dir }}" # noqa: R114 - path is a trusted role default
+    state: directory
+    owner: "{{ redis_cluster_config_owner }}"
+    group: "{{ redis_cluster_config_group }}"
+    mode: "0755"
+
+- name: Ensure Redis log directory exists
+  ansible.builtin.file:
+    path: "{{ redis_cluster_log_dir }}" # noqa: R114 - path is a trusted role default
+    state: directory
+    owner: redis
+    group: redis
+    mode: "{{ redis_cluster_log_dir_mode }}"
+
+- name: Ensure Redis data directory exists
+  ansible.builtin.file:
+    path: "{{ redis_cluster_workdir }}" # noqa: R114 - path is a trusted role default
+    state: directory
+    owner: redis
+    group: redis
+    mode: "{{ redis_cluster_workdir_mode }}"

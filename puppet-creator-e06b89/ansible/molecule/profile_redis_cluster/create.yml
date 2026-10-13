@@ -1,0 +1,31 @@
+---
+- name: Create disposable Podman targets
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Start inventory containers
+      containers.podman.podman_container:
+        name: "{{ item_target }}"
+        hostname: "{{ item_target }}"
+        image: "{{ hostvars[item_target]['container_image'] }}"
+        command: "{{ hostvars[item_target]['container_command'] }}"
+        systemd: "{{ hostvars[item_target]['container_systemd'] }}"
+        privileged: "{{ hostvars[item_target]['container_privileged'] }}"
+        state: started
+      loop: "{{ groups['molecule'] }}"
+      loop_control:
+        loop_var: item_target
+
+    - name: Inspect running containers
+      containers.podman.podman_container_info:
+        name: "{{ item_target }}"
+      register: container_info
+      until:
+        - container_info['containers'] | length > 0
+        - container_info['containers'][0]['State']['Running']
+      retries: 10
+      delay: 2
+      loop: "{{ groups['molecule'] }}"
+      loop_control:
+        loop_var: item_target

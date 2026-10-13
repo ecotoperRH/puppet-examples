@@ -1,0 +1,7 @@
+#!/bin/sh
+# Redis role fact: replica when replica.conf contains replicaof, primary otherwise.
+if [ "$(uname -s)" = "Linux" ] && [ -f /etc/redis/conf.d/replica.conf ] && grep -q 'replicaof' /etc/redis/conf.d/replica.conf; then
+  printf 'replica\n'
+else
+  printf 'primary\n'
+fi

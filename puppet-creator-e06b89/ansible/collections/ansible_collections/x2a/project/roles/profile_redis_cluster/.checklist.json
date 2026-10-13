@@ -1,0 +1,309 @@
+{
+  "module_name": "profile_redis_cluster",
+  "items": [
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/run_profile_redis_cluster.yml",
+      "status": "complete",
+      "description": "Deployment entry point for the migrated role",
+      "notes": "Generated and statically validated; runtime execution is pending."
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/molecule/requirements.yml",
+      "status": "complete",
+      "description": "Test-only Podman collection dependency",
+      "notes": "Generated and statically validated; runtime execution is pending."
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/molecule/README.md",
+      "status": "complete",
+      "description": "Developer instructions for running Molecule",
+      "notes": "Generated and statically validated; runtime execution is pending."
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/molecule/profile_redis_cluster/molecule.yml",
+      "status": "complete",
+      "description": "Ansible-native Molecule scenario configuration",
+      "notes": "Generated and statically validated; runtime execution is pending."
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/molecule/profile_redis_cluster/inventory/hosts.yml",
+      "status": "complete",
+      "description": "Disposable Podman target inventory",
+      "notes": "Generated and statically validated; runtime execution is pending."
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/molecule/profile_redis_cluster/create.yml",
+      "status": "complete",
+      "description": "Create and inspect disposable Podman targets",
+      "notes": "Generated and statically validated; runtime execution is pending."
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/molecule/profile_redis_cluster/destroy.yml",
+      "status": "complete",
+      "description": "Remove disposable Podman targets",
+      "notes": "Generated and statically validated; runtime execution is pending."
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/molecule/profile_redis_cluster/prepare.yml",
+      "status": "complete",
+      "description": "Bootstrap Python on the disposable Linux target",
+      "notes": "Generated and statically validated; runtime execution is pending."
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/molecule/profile_redis_cluster/converge.yml",
+      "status": "complete",
+      "description": "Run the deployment playbook under test",
+      "notes": "Generated and statically validated; runtime execution is pending."
+    },
+    {
+      "category": "molecule",
+      "source_path": "N/A",
+      "target_path": "ansible/molecule/profile_redis_cluster/verify.yml",
+      "status": "complete",
+      "description": "Verify migrated behavior against the source plan",
+      "notes": "Generated and statically validated; runtime execution is pending."
+    },
+    {
+      "category": "credentials",
+      "source_path": "N/A",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/aap-configuration/controller_credential_types.yml",
+      "status": "complete",
+      "description": "AAP credential types configuration",
+      "notes": ""
+    },
+    {
+      "category": "credentials",
+      "source_path": "N/A",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/aap-configuration/controller_credentials.yml",
+      "status": "complete",
+      "description": "AAP credentials configuration",
+      "notes": ""
+    },
+    {
+      "category": "credentials",
+      "source_path": "N/A",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/tasks/validate_credentials.yml",
+      "status": "complete",
+      "description": "Credential validation tasks",
+      "notes": ""
+    },
+    {
+      "category": "structure",
+      "source_path": "N/A",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/defaults/main.yml",
+      "status": "complete",
+      "description": "Role defaults for Redis port, password reference, memory, policy, and service settings.",
+      "notes": ""
+    },
+    {
+      "category": "structure",
+      "source_path": "N/A",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/handlers/main.yml",
+      "status": "complete",
+      "description": "Redis service restart/reload handlers notified by configuration changes.",
+      "notes": ""
+    },
+    {
+      "category": "structure",
+      "source_path": "N/A",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/meta/main.yml",
+      "status": "complete",
+      "description": "Role metadata and platform requirements.",
+      "notes": "Created standard meta/main.yml"
+    },
+    {
+      "category": "structure",
+      "source_path": "defaults/main.yml",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/meta/argument_specs.yml",
+      "status": "complete",
+      "description": "Role argument specs for fail-fast validation; generate after defaults/main.yml.",
+      "notes": ""
+    },
+    {
+      "category": "structure",
+      "source_path": "N/A",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/tasks/main.yml",
+      "status": "complete",
+      "description": "Main task entry point orchestrating installation, configuration, fact handling, and service management.",
+      "notes": "Role entrypoint created with mandatory credential validation include first."
+    },
+    {
+      "category": "structure",
+      "source_path": "N/A",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/vars/main.yml",
+      "status": "complete",
+      "description": "Platform-specific Redis package and service variables.",
+      "notes": ""
+    },
+    {
+      "category": "recipes",
+      "source_path": "site/role/manifests/redis_cluster.pp",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/tasks/role_redis_cluster.yml",
+      "status": "complete",
+      "description": "Migrate role wrapper, Linux gating, profile ordering, and unresolved Exec behavior after inspection.",
+      "notes": "Linux branch only set an exec path and declared no exec resource; converted the meaningful Redis profile inclusion."
+    },
+    {
+      "category": "recipes",
+      "source_path": "site/profile/manifests/cache/redis.pp",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/tasks/profile_cache_redis.yml",
+      "status": "complete",
+      "description": "Migrate the cache profile wrapper and environment handling.",
+      "notes": ""
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_redis_cluster/manifests/init.pp",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/tasks/main.yml",
+      "status": "complete",
+      "description": "Migrate profile parameters and Redis installation orchestration; omit unused PuppetDB discovery unless required.",
+      "notes": "PuppetDB discovery was omitted because redis_nodes was unused; credential validation is first as required."
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_redis_cluster/manifests/install.pp",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/tasks/install.yml",
+      "status": "complete",
+      "description": "Install Redis with package, bind, authentication, memory, AOF, and policy settings.",
+      "notes": ""
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_redis_cluster/migration-dependencies/redis/manifests/init.pp",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/tasks/redis.yml",
+      "status": "complete",
+      "description": "Migrate Redis class orchestration and ordering.",
+      "notes": "Source dependency manifest was absent from the supplied checkout; converted the documented Redis dependency orchestration."
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_redis_cluster/migration-dependencies/redis/manifests/preinstall.pp",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/tasks/preinstall.yml",
+      "status": "complete",
+      "description": "Migrate OS checks and repository preinstallation behavior.",
+      "notes": "Source dependency manifest was absent; repository management is disabled per the migration plan."
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_redis_cluster/migration-dependencies/redis/manifests/install.pp",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/tasks/install_redis.yml",
+      "status": "complete",
+      "description": "Migrate Redis package installation and platform mapping.",
+      "notes": "Source dependency manifest was absent; package installation follows the documented OS-mapped package variable."
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_redis_cluster/migration-dependencies/redis/manifests/dnfmodule.pp",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/tasks/dnfmodule.yml",
+      "status": "complete",
+      "description": "Handle optional RedHat DNF Redis module stream when configured.",
+      "notes": "Source dependency manifest was absent; optional DNF stream handling follows the documented RedHat-only behavior."
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_redis_cluster/migration-dependencies/redis/manifests/config.pp",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/tasks/config.yml",
+      "status": "complete",
+      "description": "Create Redis directories, defaults file, configuration, and ulimit behavior.",
+      "notes": "Source dependency manifest was absent; created documented Redis directories with explicit ownership and modes."
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_redis_cluster/migration-dependencies/redis/manifests/instance.pp",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/tasks/instance.yml",
+      "status": "complete",
+      "description": "Configure the explicit default Redis instance and active configuration copy.",
+      "notes": "Source dependency manifest was absent; rendered the actual migrated Redis configuration template. no_log protects the embedded Redis password."
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_redis_cluster/migration-dependencies/redis/manifests/ulimit.pp",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/tasks/ulimit.yml",
+      "status": "complete",
+      "description": "Remove obsolete Redis systemd ulimit drop-in and preserve unmanaged limits behavior.",
+      "notes": "Source dependency manifest was absent; removed the documented obsolete systemd drop-in."
+    },
+    {
+      "category": "recipes",
+      "source_path": "modules/profile_redis_cluster/migration-dependencies/redis/manifests/service.pp",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/tasks/service.yml",
+      "status": "complete",
+      "description": "Enable and start redis-server with configuration-change handler notification.",
+      "notes": ""
+    },
+    {
+      "category": "templates",
+      "source_path": "modules/profile_redis_cluster/templates/redis.conf.erb",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/templates/redis.conf.j2",
+      "status": "complete",
+      "description": "Convert the supplied Redis configuration template to Jinja2, including password-safe rendering.",
+      "notes": ""
+    },
+    {
+      "category": "files",
+      "source_path": "modules/profile_redis_cluster/lib/facter/redis_role.rb",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/files/redis_role.fact",
+      "status": "complete",
+      "description": "Provide the optional Linux redis_role custom fact based on replica.conf.",
+      "notes": ""
+    },
+    {
+      "category": "templates",
+      "source_path": "redis/service_templates/redis.service.epp",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/templates/redis.service.j2",
+      "status": "complete",
+      "description": "Preserve the external dependency service unit template only if manage_service_file is confirmed enabled; source is absent from supplied tree.",
+      "notes": "Source file was absent from supplied repository; created a conservative systemd template based on migration-plan parameters. Current role uses distribution-provided service unless explicitly enabled."
+    },
+    {
+      "category": "attributes",
+      "source_path": "data/common.yaml",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/defaults/main.yml",
+      "status": "complete",
+      "description": "Migrate Redis-specific manifest defaults and secure password variable mapping; common data contains no Redis values.",
+      "notes": "Source common data contained no Redis values; populated role defaults from the module plan and AAP credential mapping."
+    },
+    {
+      "category": "attributes",
+      "source_path": "data/environment/production.yaml",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/vars/production.yml",
+      "status": "complete",
+      "description": "Review production environment data; no Redis-specific variables are currently defined.",
+      "notes": ""
+    },
+    {
+      "category": "attributes",
+      "source_path": "data/environment/staging.yaml",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/vars/staging.yml",
+      "status": "complete",
+      "description": "Review staging environment data; no Redis-specific variables are currently defined.",
+      "notes": ""
+    },
+    {
+      "category": "attributes",
+      "source_path": "test/data/common.yaml",
+      "target_path": "ansible/collections/ansible_collections/x2a/project/roles/profile_redis_cluster/vars/test.yml",
+      "status": "complete",
+      "description": "Migrate test overrides to test variables without committing the plaintext password; use Vault/external secret instead.",
+      "notes": "Migrated the Redis test memory override; omitted plaintext test password because AAP injects redis_password securely."
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+---
+# Test overrides. The password is injected by the AAP credential instead of stored here.
+redis_cluster_maxmemory_mb: 256

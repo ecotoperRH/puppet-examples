@@ -1,0 +1,18 @@
+---
+- name: Prepare Linux test targets
+  hosts: molecule
+  gather_facts: false
+  tasks:
+    - name: Ensure Python is available for Ansible modules
+      ansible.builtin.raw: >-
+        /bin/sh -c 'if command -v python3 >/dev/null 2>&1; then exit 0;
+        elif command -v dnf >/dev/null 2>&1; then dnf install -y python3;
+        elif command -v apt-get >/dev/null 2>&1; then apt-get update && apt-get install -y python3;
+        else echo "No supported package manager found to install Python 3" >&2; exit 1; fi
+        && echo X2A_PYTHON_INSTALLED'
+      register: python_bootstrap
+      changed_when: "'X2A_PYTHON_INSTALLED' in python_bootstrap['stdout']"
+
+    - name: Wait for the Ansible connection after bootstrapping Python
+      ansible.builtin.wait_for_connection:
+        timeout: 30

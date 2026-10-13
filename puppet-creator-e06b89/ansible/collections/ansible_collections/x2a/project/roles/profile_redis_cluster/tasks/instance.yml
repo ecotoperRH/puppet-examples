@@ -1,0 +1,11 @@
+---
+- name: Render Redis configuration
+  ansible.builtin.template:
+    src: redis.conf.j2
+    dest: "{{ redis_cluster_config_file }}" # noqa: R114 - destination is a trusted role default
+    owner: "{{ redis_cluster_config_owner }}"
+    group: "{{ redis_cluster_config_group }}"
+    mode: "{{ redis_cluster_config_mode }}"
+    backup: true
+  notify: Restart Redis
+  no_log: "{{ redis_cluster_secure_logging }}"

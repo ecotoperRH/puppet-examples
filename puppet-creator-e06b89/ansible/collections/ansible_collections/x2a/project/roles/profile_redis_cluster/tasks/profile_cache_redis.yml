@@ -1,0 +1,3 @@
+---
+- name: Apply the profile_redis_cluster role implementation
+  ansible.builtin.include_tasks: main.yml

@@ -1,0 +1,3 @@
+---
+- name: Include the Redis cache profile
+  ansible.builtin.include_tasks: profile_cache_redis.yml

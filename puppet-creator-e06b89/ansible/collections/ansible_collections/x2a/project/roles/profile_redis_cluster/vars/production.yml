@@ -1,0 +1,3 @@
+---
+# Production environment contains no Redis-specific overrides.
+redis_cluster_environment: production

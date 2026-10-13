@@ -1,0 +1,123 @@
+---
+# Unsupported pre-flight checks: OS/package discovery has no stated expected
+# outcome; redis-server --test-memory and `facter redis_role` are explicitly
+# diagnostic/conditional checks without a required result.
+- name: Verify Redis default instance
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Collect default instance directory metadata
+      ansible.builtin.stat:
+        path: "{{ item_path }}"
+      loop:
+        - /var/lib/redis
+        - /var/log/redis
+      loop_control:
+        loop_var: item_path
+      register: redis_directory_stats
+
+    - name: Verify default instance directories exist with required ownership
+      ansible.builtin.assert:
+        that:
+          - item_directory['stat']['exists']
+          - item_directory['stat']['pw_name'] == 'redis'
+          - item_directory['stat']['gr_name'] == 'redis'
+          - >-
+            item_directory['stat']['mode'] == '0750'
+            if item_directory['item'] == '/var/lib/redis'
+            else true
+        fail_msg: "Redis directory metadata is not as expected"
+      loop: "{{ redis_directory_stats['results'] }}"
+      loop_control:
+        loop_var: item_directory
+
+    - name: Read the active default Redis configuration
+      ansible.builtin.slurp:
+        src: /etc/redis/redis.conf
+      register: redis_config
+
+    - name: Verify the active default Redis configuration settings
+      ansible.builtin.assert:
+        that:
+          - "(redis_config['content'] | b64decode) is search('(?m)^[[:space:]]*bind[[:space:]]+0\\.0\\.0\\s*$')"
+          - "(redis_config['content'] | b64decode) is search('(?m)^[[:space:]]*port[[:space:]]+6379[[:space:]]*$')"
+          - "(redis_config['content'] | b64decode) is search('(?m)^[[:space:]]*maxmemory-policy[[:space:]]+allkeys-lru[[:space:]]*$')"
+          - "(redis_config['content'] | b64decode) is search('(?m)^[[:space:]]*appendonly[[:space:]]+yes[[:space:]]*$')"
+          - "(redis_config['content'] | b64decode) is search('(?m)^[[:space:]]*appendfsync[[:space:]]+everysec[[:space:]]*$')"
+          - "(redis_config['content'] | b64decode) is search('(?m)^[[:space:]]*maxmemory[[:space:]]+(256mb|2048mb)[[:space:]]*$')"
+        fail_msg: "The active Redis configuration does not contain the required setting"
+
+    - name: Check that the obsolete Redis ulimit drop-in is absent
+      ansible.builtin.stat:
+        path: /etc/systemd/system/redis-server.service.d/limit.conf
+      register: redis_ulimit_dropin
+
+    - name: Verify that the obsolete Redis ulimit drop-in is absent
+      ansible.builtin.assert:
+        that:
+          - not redis_ulimit_dropin['stat']['exists']
+        fail_msg: "The obsolete Redis ulimit drop-in is present"
+
+    - name: Collect Redis service facts
+      ansible.builtin.service_facts:
+
+    - name: Select the distribution Redis service fact
+      ansible.builtin.set_fact:
+        redis_service: >-
+          {{ ansible_facts['services'].get('redis-server.service',
+             ansible_facts['services'].get('redis-server', {})) }}
+
+    - name: Verify the default Redis service is enabled and active
+      ansible.builtin.assert:
+        that:
+          - redis_service['status'] == 'enabled'
+          - redis_service['state'] == 'running'
+        fail_msg: "The default Redis service is not enabled and running"
+
+    - name: Verify the default Redis TCP endpoint
+      ansible.builtin.wait_for:
+        host: 127.0.0.1
+        port: 6379
+        state: started
+        timeout: 5
+
+    - name: Check the default Redis Unix socket
+      ansible.builtin.stat:
+        path: /var/run/redis/redis.sock
+      register: redis_socket
+
+    - name: Verify the default Redis Unix socket exists
+      ansible.builtin.assert:
+        that:
+          - redis_socket['stat']['exists']
+          - redis_socket['stat']['issock']
+        fail_msg: "The default Redis Unix socket is absent"
+
+    - name: Verify the supplied Redis password source
+      ansible.builtin.assert:
+        that:
+          - lookup('ansible.builtin.env', 'VAULT_REDIS_CLUSTER_PASSWORD') | length > 0
+        fail_msg: "The Redis password must be supplied securely"
+      no_log: true
+
+    - name: Authenticate and ping the default Redis instance
+      ansible.builtin.command:
+        argv:
+          - redis-cli
+          - -h
+          - 127.0.0.1
+          - -p
+          - '6379'
+          - -a
+          - "{{ lookup('ansible.builtin.env', 'VAULT_REDIS_CLUSTER_PASSWORD') }}"
+          - ping
+        changed_when: false
+      register: redis_ping
+      no_log: true
+
+    - name: Verify authenticated Redis ping
+      ansible.builtin.assert:
+        that:
+          - redis_ping['stdout'] | trim == 'PONG'
+        fail_msg: "Authenticated Redis ping did not return PONG"
+      no_log: true

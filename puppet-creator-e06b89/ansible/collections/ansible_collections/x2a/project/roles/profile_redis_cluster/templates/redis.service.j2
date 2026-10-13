@@ -1,0 +1,13 @@
+[Unit]
+Description=Redis instance {{ instance_title }}
+After=network.target
+
+[Service]
+Type=forking
+User={{ service_user }}
+ExecStart={{ bin_path }} {{ redis_file_name }}
+ExecStop=/usr/bin/redis-cli -p {{ port }} shutdown
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

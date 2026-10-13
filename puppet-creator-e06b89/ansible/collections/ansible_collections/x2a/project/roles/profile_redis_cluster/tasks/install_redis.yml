@@ -1,0 +1,5 @@
+---
+- name: Install Redis package
+  ansible.builtin.package:
+    name: "{{ redis_cluster_package_name }}"
+    state: present

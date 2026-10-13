@@ -1,0 +1,8 @@
+---
+- name: Run migrated role profile_redis_cluster
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Apply profile_redis_cluster role
+      ansible.builtin.include_role:
+        name: x2a.project.profile_redis_cluster

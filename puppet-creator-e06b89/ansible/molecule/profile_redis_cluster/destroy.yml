@@ -1,0 +1,14 @@
+---
+- name: Destroy disposable Podman targets
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Remove inventory containers even after a failed converge
+      containers.podman.podman_container:
+        name: "{{ item_target }}"
+        state: absent
+        force_delete: true
+      loop: "{{ groups['molecule'] }}"
+      loop_control:
+        loop_var: item_target

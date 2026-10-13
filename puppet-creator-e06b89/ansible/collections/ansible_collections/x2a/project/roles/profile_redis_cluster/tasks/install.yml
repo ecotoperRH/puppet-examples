@@ -1,0 +1,21 @@
+---
+- name: Configure optional Redis DNF module stream
+  ansible.builtin.include_tasks: dnfmodule.yml
+
+- name: Install Redis package and dependencies
+  ansible.builtin.include_tasks: preinstall.yml
+
+- name: Install Redis
+  ansible.builtin.include_tasks: install_redis.yml
+
+- name: Configure Redis
+  ansible.builtin.include_tasks: config.yml
+
+- name: Manage Redis instance configuration
+  ansible.builtin.include_tasks: instance.yml
+
+- name: Apply Redis ulimit cleanup
+  ansible.builtin.include_tasks: ulimit.yml
+
+- name: Manage Redis service
+  ansible.builtin.include_tasks: service.yml

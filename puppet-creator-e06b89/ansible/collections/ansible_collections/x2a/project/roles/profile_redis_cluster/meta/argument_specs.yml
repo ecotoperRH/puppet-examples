@@ -1,0 +1,124 @@
+---
+argument_specs:
+  main:
+    short_description: Install and configure a Redis service
+    description:
+      - Installs Redis and manages its directories, configuration, service, and obsolete ulimit drop-in.
+    options:
+      redis_cluster_port:
+        type: int
+        required: false
+        default: 6379
+        description: Redis TCP port.
+      redis_cluster_password:
+        type: str
+        required: false
+        default: "{{ redis_password }}"
+        description: Redis authentication password supplied by the AAP credential.
+      redis_cluster_maxmemory_mb:
+        type: int
+        required: false
+        default: 2048
+        description: Maximum Redis memory in megabytes.
+      redis_cluster_maxmemory_policy:
+        type: str
+        required: false
+        default: allkeys-lru
+        description: Redis eviction policy.
+      redis_cluster_bind:
+        type: list
+        elements: str
+        required: false
+        default:
+          - 0.0.0.0
+        description: Redis bind addresses.
+      redis_cluster_appendonly:
+        type: bool
+        required: false
+        default: true
+        description: Whether Redis AOF persistence is enabled.
+      redis_cluster_appendfsync:
+        type: str
+        required: false
+        default: everysec
+        description: Redis AOF fsync policy.
+      redis_cluster_service_name:
+        type: str
+        required: false
+        default: redis-server
+        description: Redis service name.
+      redis_cluster_package_name:
+        type: str
+        required: false
+        default: redis-server
+        description: Redis package name.
+      redis_cluster_config_dir:
+        type: str
+        required: false
+        default: /etc/redis
+        description: Redis configuration directory.
+      redis_cluster_config_file:
+        type: str
+        required: false
+        default: /etc/redis/redis.conf
+        description: Redis active configuration file.
+      redis_cluster_config_mode:
+        type: str
+        required: false
+        default: "0640"
+        description: Redis configuration file mode.
+      redis_cluster_config_owner:
+        type: str
+        required: false
+        default: root
+        description: Redis configuration file owner.
+      redis_cluster_config_group:
+        type: str
+        required: false
+        default: redis
+        description: Redis configuration file group.
+      redis_cluster_workdir:
+        type: str
+        required: false
+        default: /var/lib/redis
+        description: Redis data directory.
+      redis_cluster_workdir_mode:
+        type: str
+        required: false
+        default: "0750"
+        description: Redis data directory mode.
+      redis_cluster_log_dir:
+        type: str
+        required: false
+        default: /var/log/redis
+        description: Redis log directory.
+      redis_cluster_log_dir_mode:
+        type: str
+        required: false
+        default: "0755"
+        description: Redis log directory mode.
+      redis_cluster_socket:
+        type: str
+        required: false
+        default: /var/run/redis/redis.sock
+        description: Redis Unix socket path.
+      redis_cluster_socket_mode:
+        type: str
+        required: false
+        default: "0755"
+        description: Redis Unix socket mode.
+      redis_cluster_manage_repo:
+        type: bool
+        required: false
+        default: false
+        description: Whether to manage a Redis package repository.
+      redis_cluster_dnf_module_stream:
+        type: str
+        required: false
+        default:
+        description: Optional RedHat Redis DNF module stream.
+      redis_cluster_secure_logging:
+        type: bool
+        required: false
+        default: true
+        description: Hide tasks that render the Redis password from logs.

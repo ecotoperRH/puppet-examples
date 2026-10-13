@@ -1,0 +1,36 @@
+---
+- name: Validate optional Redis DNF module configuration
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['os_family'] == 'RedHat'
+    fail_msg: redis_cluster_dnf_module_stream requires a RedHat-family host.
+    quiet: true
+  when: redis_cluster_dnf_module_stream is not none
+
+- name: Check enabled Redis DNF module stream  # noqa: R101 - command arguments use the role default stream value, not untrusted input
+  ansible.builtin.command:
+    argv:
+      - dnf
+      - module
+      - list
+      - --enabled
+      - "{{ redis_cluster_dnf_module_stream }}"
+  register: redis_cluster_dnf_module_status
+  changed_when: false
+  failed_when: false
+  when:
+    - redis_cluster_dnf_module_stream is not none
+    - ansible_facts['os_family'] == 'RedHat'
+
+- name: Enable Redis DNF module stream  # noqa: L039,R101 - registered status comes from the preceding task; command uses the role default stream value, not untrusted input
+  ansible.builtin.command:
+    argv:
+      - dnf
+      - module
+      - enable
+      - "{{ redis_cluster_dnf_module_stream }}"
+      - --assumeyes
+  when:
+    - redis_cluster_dnf_module_stream is not none
+    - ansible_facts['os_family'] == 'RedHat'
+    - redis_cluster_dnf_module_stream not in redis_cluster_dnf_module_status.stdout

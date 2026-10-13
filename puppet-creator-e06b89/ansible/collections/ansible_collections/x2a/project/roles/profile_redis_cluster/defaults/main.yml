@@ -1,0 +1,26 @@
+---
+# Redis profile defaults
+redis_cluster_port: 6379
+redis_cluster_password: "{{ redis_password }}"
+redis_cluster_maxmemory_mb: 2048
+redis_cluster_maxmemory_policy: allkeys-lru
+redis_cluster_bind:
+  - 0.0.0.0
+redis_cluster_appendonly: true
+redis_cluster_appendfsync: everysec
+redis_cluster_service_name: "{{ 'redis' if ansible_facts['os_family'] == 'RedHat' else 'redis-server' }}"
+redis_cluster_package_name: "{{ 'redis' if ansible_facts['os_family'] == 'RedHat' else 'redis-server' }}"
+redis_cluster_config_dir: "{{ '/etc' if ansible_facts['os_family'] == 'RedHat' else '/etc/redis' }}"
+redis_cluster_config_file: "{{ '/etc/redis.conf' if ansible_facts['os_family'] == 'RedHat' else '/etc/redis/redis.conf' }}"
+redis_cluster_config_mode: "0640"
+redis_cluster_config_owner: root
+redis_cluster_config_group: redis
+redis_cluster_workdir: /var/lib/redis
+redis_cluster_workdir_mode: "0750"
+redis_cluster_log_dir: /var/log/redis
+redis_cluster_log_dir_mode: "0755"
+redis_cluster_socket: /var/run/redis/redis.sock
+redis_cluster_socket_mode: "0755"
+redis_cluster_manage_repo: false
+redis_cluster_dnf_module_stream:
+redis_cluster_secure_logging: true

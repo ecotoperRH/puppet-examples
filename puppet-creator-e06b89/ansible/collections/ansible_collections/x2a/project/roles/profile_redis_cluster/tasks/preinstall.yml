@@ -1,0 +1,5 @@
+---
+- name: Skip Redis repository management
+  ansible.builtin.debug:
+    msg: Redis repository management is disabled by the migrated profile.
+  when: not redis_cluster_manage_repo | bool
