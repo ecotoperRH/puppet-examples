@@ -1,0 +1,44 @@
+[
+  {
+    "name": "profile_app_stack",
+    "path": "modules/profile_app_stack",
+    "description": "Orchestrates a Python application stack with local PostgreSQL integration, Git-based deployment, systemd service management, logging, monitoring, and strict dependency ordering.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_haproxy",
+    "path": "modules/profile_haproxy",
+    "description": "Configures an HAProxy load balancer, including package installation, generated configuration, backend pools, statistics, optional TLS, service management, logging, and firewall rules.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_redis_cluster",
+    "path": "modules/profile_redis_cluster",
+    "description": "Installs and configures Redis for cluster operation, using PuppetDB discovery to identify nodes running the Redis profile.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "base_utils",
+    "path": "site/modules/common/base_utils",
+    "description": "Provides common host utilities and base-profile helper abstractions, including configurable utility packages and MOTD management.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_app_stack",
+    "path": "site/modules/linux/profile_app_stack",
+    "description": "Implements the Python and PostgreSQL application stack for Linux, including deployment, orchestration, and explicit Red Hat 8/9 support.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_haproxy",
+    "path": "site/modules/linux/profile_haproxy",
+    "description": "Implements the Linux HAProxy load-balancer profile with installation, configuration, dynamic discovery, service management, TLS and statistics settings, and firewall integration.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_redis_cluster",
+    "path": "site/modules/linux/profile_redis_cluster",
+    "description": "Implements the Linux Redis cluster profile with Redis installation, tuning, credentials, PuppetDB-based discovery, and cluster configuration.",
+    "technology": "Puppet"
+  }
+]
