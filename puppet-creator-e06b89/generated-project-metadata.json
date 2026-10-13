@@ -1,0 +1,44 @@
+[
+  {
+    "name": "profile_app_stack",
+    "path": "modules/profile_app_stack",
+    "description": "Manages a Python application stack, including Git deployment, virtualenv and dependencies, optional local PostgreSQL, migrations, systemd service, environment and health-check files, and database backups.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_haproxy",
+    "path": "modules/profile_haproxy",
+    "description": "Installs and configures HAProxy with hierarchical backend data, service ordering, health checks, SSL settings, custom error pages, and Ubuntu UFW firewall rules.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_redis_cluster",
+    "path": "modules/profile_redis_cluster",
+    "description": "Configures Redis through the puppet-redis module, including authentication, persistence, memory limits, eviction policy, bind address, and PuppetDB-based peer discovery.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "base_utils",
+    "path": "site/modules/common/base_utils",
+    "description": "Provides common Linux/Unix utilities, MOTD and package management, custom types and facts, platform metadata, health checks, rolling restart operations, and Bolt actions.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_app_stack",
+    "path": "site/modules/linux/profile_app_stack",
+    "description": "Manages a Linux Python application stack with Git checkout, virtualenv and pip dependencies, optional local PostgreSQL, backups, environment files, systemd service, health checks, and migrations.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_haproxy",
+    "path": "site/modules/linux/profile_haproxy",
+    "description": "Configures a Linux HAProxy load balancer with installation, hierarchical backend data, discovery, health checks, SSL settings, service management, and firewall rules.",
+    "technology": "Puppet"
+  },
+  {
+    "name": "profile_redis_cluster",
+    "path": "site/modules/linux/profile_redis_cluster",
+    "description": "Manages Redis on Linux through the Puppet Redis module, including authentication, AOF persistence, memory policies, package and service configuration, and PuppetDB-oriented cluster support.",
+    "technology": "Puppet"
+  }
+]
